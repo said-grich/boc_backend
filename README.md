@@ -14,19 +14,17 @@ This is a Django project with Django REST framework.
    ```
    git clone https://github.com/said-grich/boc_backend.git
    cd boc_backend
-   ```
-2. **Create a virtual environment:**
-   ```
-  python -m venv boc_env
-  boc_env\Scripts\activate
-   ```
-3.**Install the dependencies:**
+
+2. **Clone the repository:**
+    ```
+    python -m venv boc_env
+    boc_env\Scripts\activate
+    
+3. **Install the dependencies:**
    ```
    pip install -r requirements.txt
-   ```
-4.**Run the development server:**
+4. **Run the development server:**
    ```
    python manage.py makemigrations
    python manage.py migrate
    python manage.py runserver
-   ```
