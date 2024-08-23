@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import GitHubSearchView
+from .views import SearchView
 
 urlpatterns = [
-    path('github-search/', GitHubSearchView.as_view(), name='github-search'),
+    path('github-search/', SearchView.as_view(), name='github-search'),
 ]
