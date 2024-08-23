@@ -1,41 +1,107 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import GitHubSearchSerializer
-from .utils import GitHubUtils
+from .serializers import SearchSerializer
 import zipfile
 import tempfile
 import os
-class GitHubSearchView(APIView):
+import PyPDF2  
+import docx    
+import xlrd   
+import openpyxl
+from .utils import *
+import shutil
+ 
+class SearchView(APIView):
     def post(self, request):
-        serializer = GitHubSearchSerializer(data=request.data)
+        serializer = SearchSerializer(data=request.data)
         if serializer.is_valid():
-            github_url = serializer.validated_data.get('github_url')
-            query = serializer.validated_data['query']
-            zip_file = serializer.validated_data.get('zip_file')
-
-            github_utils = GitHubUtils()
+            uploaded_files = request.FILES.getlist('files')  # Get the list of uploaded files
+            tag_name = serializer.validated_data.get('tag_name')
+            print(f"------------------------> Tag name {tag_name}")
             temp_dir = None
+            result = []  # List to hold text data from all files
 
             try:
-                if github_url:
-                    temp_dir = github_utils.clone_repo(github_url)
-                elif zip_file:
-                    temp_dir = tempfile.mkdtemp()
-                    zip_path = os.path.join(temp_dir, zip_file.name)
-                    with open(zip_path, 'wb') as f:
-                        for chunk in zip_file.chunks():
-                            f.write(chunk)
-                    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                        zip_ref.extractall(temp_dir)
-                else:
-                    return Response({"error": "Either 'github_url' or 'file' must be provided."}, status=status.HTTP_400_BAD_REQUEST)
+                temp_dir = tempfile.mkdtemp()  # Create a temporary directory
 
-                text_data = github_utils.read_all_files(temp_dir)
-                
-                return Response({"results": text_data}, status=status.HTTP_200_OK)
-            except Exception as e:
-                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                for uploaded_file in uploaded_files:
+                    file_type=None
+                    file_path = os.path.join(temp_dir, uploaded_file.name)
+                    with open(file_path, 'wb') as f:
+                        for chunk in uploaded_file.chunks():
+                            f.write(chunk)
+                    
+                    # Determine the file type and process accordingly
+                    if uploaded_file.name.endswith('.zip'):
+                        file_type="Github"
+                        # Use GitHubUtils for handling .zip files
+                        github_utils = GitHubUtils()
+                        with zipfile.ZipFile(file_path, 'r') as zip_ref:
+                            zip_ref.extractall(temp_dir)
+                        text_data = self.read_all_files_in_directory(temp_dir)
+                        github_utils.cleanup(temp_dir)  # Clean up the extracted files
+                    elif uploaded_file.name.endswith('.pdf'):
+                        print("Its PDF File -----")
+                        file_type="PDF"
+                        text_data = self.extract_text_from_pdf(file_path)
+                    elif uploaded_file.name.endswith('.docx'):
+                        file_type="WORD"
+                        text_data = self.extract_text_from_docx(file_path)
+                    elif uploaded_file.name.endswith('.xls') or uploaded_file.name.endswith('.xlsx'):
+                        file_type="EXCEL"
+                        text_data = self.extract_text_from_excel(file_path)
+                    else:
+                        return Response({"error": f"Unsupported file format: {uploaded_file.name}"}, status=status.HTTP_400_BAD_REQUEST)
+                    
+                    result+=search_and_extract(text_data,tag_name,file_type,uploaded_file.name)
+                    
+                   
+
+                return Response({"results": result}, status=status.HTTP_200_OK)
+            # except Exception as e:
+            #     return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
             finally:
-                github_utils.cleanup(temp_dir)
+                if temp_dir and os.path.exists(temp_dir):
+                    shutil.rmtree(temp_dir)  # Ensure the temporary directory is cleaned up
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def read_all_files_in_directory(self, directory):
+        # Function to read all files in a directory (used for extracted zip files)
+        text_data = []
+        for root, dirs, files in os.walk(directory):
+            for file in files:
+                file_path = os.path.join(root, file)
+                if file.endswith('.txt'):
+                    with open(file_path, 'r') as f:
+                        text_data.append(f.read())
+                # Add more conditions here if needed for other file types within zip
+        return text_data
+
+    def extract_text_from_pdf(self, pdf_path):
+        pdf_reader=PDFTextExtractor(pdf_path)
+        text_data=pdf_reader.extract_text_with_ocr()
+        print(text_data)
+        return text_data
+
+    def extract_text_from_docx(self, docx_path):
+        # Function to extract text from a DOCX file
+        doc = docx.Document(docx_path)
+        return [para.text for para in doc.paragraphs]
+
+    def extract_text_from_excel(self, excel_path):
+        # Function to extract text from an Excel file
+        text_data = []
+        if excel_path.endswith('.xls'):
+            workbook = xlrd.open_workbook(excel_path)
+            for sheet in workbook.sheets():
+                for row_idx in range(sheet.nrows):
+                    row = sheet.row(row_idx)
+                    text_data.append(", ".join([str(cell.value) for cell in row]))
+        elif excel_path.endswith('.xlsx'):
+            workbook = openpyxl.load_workbook(excel_path)
+            for sheet_name in workbook.sheetnames:
+                sheet = workbook[sheet_name]
+                for row in sheet.iter_rows(values_only=True):
+                    text_data.append(", ".join([str(cell) for cell in row if cell is not None]))
+        return text_data
