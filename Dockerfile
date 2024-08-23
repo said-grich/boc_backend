@@ -4,6 +4,9 @@ FROM python:3.10-slim
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+ENV OMP_THREAD_LIMIT=1
+
+
 
 # Set the working directory in the container
 WORKDIR /app
