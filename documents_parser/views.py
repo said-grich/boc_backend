@@ -13,6 +13,8 @@ from .utils import *
 from .models import *
 import shutil
 import time
+import chardet
+from .github_controller import *
 
  
 class SearchView(APIView):
@@ -20,15 +22,16 @@ class SearchView(APIView):
         serializer = SearchSerializer(data=request.data)
         if serializer.is_valid():
             uploaded_files = request.FILES.getlist('files')
-            tag_name = serializer.validated_data.get('tag_name')
-            print(f"Tag ====>{tag_name}")
+            tag_names = serializer.validated_data.get('tag_names')  # Assume 'tag_names' is a list of tags
+            print(f"Tags ====>{tag_names}")
             temp_dir = None
-            result = []  # List to hold text data from all files
+            results_by_tag = {tag: [] for tag in tag_names}  # Initialize a dictionary to hold results by tag
 
             try:
                 temp_dir = tempfile.mkdtemp()  # Create a temporary directory
 
                 for uploaded_file in uploaded_files:
+                    print(f"{uploaded_file}")
                     file_type = None
                     file_path = os.path.join(temp_dir, uploaded_file.name)
                     with open(file_path, 'wb') as f:
@@ -39,11 +42,10 @@ class SearchView(APIView):
                     if uploaded_file.name.endswith('.zip'):
                         file_type = "Github"
                         # Use GitHubUtils for handling .zip files
-                        github_utils = GitHubUtils()
                         with zipfile.ZipFile(file_path, 'r') as zip_ref:
                             zip_ref.extractall(temp_dir)
-                        text_data = self.read_all_files_in_directory(temp_dir)
-                        github_utils.cleanup(temp_dir)  # Clean up the extracted files
+                        text_data = read_all_files_in_directory(temp_dir)
+                        
                     elif uploaded_file.name.endswith('.pdf'):
                         file_type = "PDF"
                         start_time = time.time()  # Record the start time
@@ -61,33 +63,30 @@ class SearchView(APIView):
                         text_data = self.extract_text_from_excel(file_path)
                     else:
                         return Response({"error": f"Unsupported file format: {uploaded_file.name}"}, status=status.HTTP_400_BAD_REQUEST)
-                    
-                    # Perform the search and extraction
-                    result += search_and_extract(text_data, tag_name, file_type, uploaded_file.name)
-                    
+                    if file_type =="Github":
+                        for tag_name in tag_names:
+                            for text in text_data:
+                                results_for_tag = search_and_extract(text, tag_name, file_type, uploaded_file.name)
+                                results_by_tag[tag_name].extend(results_for_tag)
+                        
+                    else:
+                        for tag_name in tag_names:
+                            results_for_tag = search_and_extract(text_data, tag_name, file_type, uploaded_file.name)
+                            results_by_tag[tag_name].extend(results_for_tag)  # Append results to the corresponding tag's list
+                        
                     # Clear the text data to free up memory
                     del text_data
                     import gc
                     gc.collect()  # Force garbage collection after each file
 
-                return Response({"results": result}, status=status.HTTP_200_OK)
-            except Exception as e:
-                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"results": results_by_tag}, status=status.HTTP_200_OK)
+            # except Exception as e:
+            #     return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
             finally:
                 if temp_dir and os.path.exists(temp_dir):
                     shutil.rmtree(temp_dir)  # Ensure the temporary directory is cleaned up
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def read_all_files_in_directory(self, directory):
-        text_data = []
-        for root, dirs, files in os.walk(directory):
-            for file in files:
-                file_path = os.path.join(root, file)
-                if file.endswith('.txt'):
-                    with open(file_path, 'r') as f:
-                        text_data.append(f.read())
-                # Add more conditions here if needed for other file types within zip
-        return text_data
 
     def extract_text_from_pdf(self, pdf_path):
         # Ensure semaphore initialization and processing is done correctly
@@ -101,12 +100,14 @@ class SearchView(APIView):
             use_parallel=True,
             max_workers=1
         )
-        return text_data
+        
+        return clean_text(text_data)
 
     def extract_text_from_docx(self, docx_path):
         doc = docx.Document(docx_path)
-        return [para.text for para in doc.paragraphs]
-
+        text_data= " ".join([para.text for para in doc.paragraphs])
+        return clean_text(text_data)
+ 
     def extract_text_from_excel(self, excel_path):
         text_data = []
         if excel_path.endswith('.xls'):
@@ -121,4 +122,10 @@ class SearchView(APIView):
                 sheet = workbook[sheet_name]
                 for row in sheet.iter_rows(values_only=True):
                     text_data.append(", ".join([str(cell) for cell in row if cell is not None]))
-        return text_data
+        
+        # Join the list of strings into a single string
+        combined_text = " ".join(text_data)
+        
+        # Clean the combined text
+        return clean_text(combined_text)
+

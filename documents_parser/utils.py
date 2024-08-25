@@ -57,46 +57,58 @@ class GitHubUtils:
         func(path)
 
 
-def search_and_extract(source_text, tag, file_type, file_name ,user="Test_User"):
-    # Case 1: Exact Tag Search
-    exact_matches = re.findall(rf"\b{tag}\b", source_text, re.IGNORECASE)
 
-    # Case 2: Tag as Part of Another Word
-    partial_matches = re.findall(rf"\w*{tag}\w*", source_text, re.IGNORECASE)
+def clean_text(text):
+    
+    pattern = r'[^a-zA-Z0-9\s.,!?;:\'\"()-]'
+    
+    # Remove all characters that do not match the pattern
+    cleaned_text = re.sub(pattern, '', text)
+    
+    # Replace multiple spaces with a single space
+    cleaned_text = re.sub(r'\s+', ' ', cleaned_text)
+    
+    return cleaned_text.strip()
 
-    # Extract information based on the search type
+def search_and_extract(source_text, tag, file_type, file_name, user="Test_User"):
+    
+    sentence_pattern = re.compile(r'([^.?!]*\b' + re.escape(tag) + r'\b[^.?!]*[.?!])', re.IGNORECASE)
+
+    exact_matches = re.findall(sentence_pattern, source_text)
+
+    partial_matches = re.findall(r'([^.?!]*\w*' + re.escape(tag) + r'\w*[^.?!]*[.?!])', source_text, re.IGNORECASE)
+
     extracted_data = []
 
-    # For Exact Matches
     for match in exact_matches:
+        highlighted_sentence = re.sub(rf"({tag})", r'**\1**', match, flags=re.IGNORECASE)
         extracted_data.append({
-            "Source File Name": f"{file_name}",
-            "File Type": f"{file_type}",
+            "Source File Name": file_name,
+            "File Type": file_type,
             "Tag Searched": tag,
-            "Block/Record Tag Found": f"{match}",
-            # This would be dynamically determined
-            "Location of the Tag": "Page 1, Section 2",
+            "Block/Record Tag Found": highlighted_sentence,
+            "Location of the Tag": "Page 1, Section 2",  # Placeholder for actual location logic
             "Date of Search": datetime.now().strftime("%B %d, %Y"),
-            "Search Author": f"{user}",
+            "Search Author": user,
             "Other": "Exact match"
         })
 
-    # For Partial Matches
     for match in partial_matches:
-        if match.lower() != tag.lower():  # To avoid duplicates in case of exact match
+        if match.lower() != tag.lower():  
+            highlighted_sentence = re.sub(rf"({tag})", r'**\1**', match, flags=re.IGNORECASE)
             extracted_data.append({
-                "Source File Name": f"{file_name}",
-                "File Type": f"{file_type}",
+                "Source File Name": file_name,
+                "File Type": file_type,
                 "Tag Searched": tag,
-                "Block/Record Tag Found": f"{match}",
-                # This would be dynamically determined
-                "Location of the Tag": "Page 1, Section 2",
+                "Block/Record Tag Found": highlighted_sentence,
+                "Location of the Tag": "Page 1, Section 2",  # Placeholder for actual location logic
                 "Date of Search": datetime.now().strftime("%B %d, %Y"),
-                "Search Author": f"{user}",
+                "Search Author": user,
                 "Other": "Partial match"
             })
 
     return extracted_data
+
 
 # import pdfplumber
 # import pytesseract
