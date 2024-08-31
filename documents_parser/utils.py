@@ -7,56 +7,11 @@ import os
 import re
 import numpy as np
 from datetime import datetime
-
-
-class GitHubUtils:
-    def __init__(self):
-        self.exclude_dirs = {'.git', '.github', '__pycache__'}
-        self.exclude_files = {'.gitignore',
-                              '.gitattributes', 'LICENSE', 'requirements.txt'}
-        pass
-
-    def clone_repo(self, github_url):
-        temp_dir = tempfile.mkdtemp()
-        git.Repo.clone_from(github_url, temp_dir)
-        return temp_dir
-
-    def read_zip_file(self, zip_path):
-        """
-        Read and process the contents of a ZIP file.
-        """
-        temp_dir = tempfile.mkdtemp()
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            zip_ref.extractall(temp_dir)
-        text_data = self.read_all_files(temp_dir)
-        shutil.rmtree(temp_dir)
-        return text_data
-
-    def read_all_files(self, repo_path):
-        text_data = []
-        for root, dirs, files in os.walk(repo_path):
-            dirs[:] = [d for d in dirs if d not in self.exclude_dirs]
-            print(dirs)
-            for file in files:
-                if file in self.exclude_files or file.startswith('.'):
-                    continue
-                file_path = os.path.join(root, file)
-                try:
-                    with open(file_path, 'r', encoding='utf-8') as f:
-                        text_data.append(f.read())
-                except Exception as e:
-                    print(f"Could not read file {file_path}: {e}")
-        return text_data
-
-    def cleanup(self, path):
-        if path and os.path.exists(path):
-            shutil.rmtree(path, onerror=self._handle_remove_readonly)
-
-    def _handle_remove_readonly(self, func, path, exc_info):
-        os.chmod(path, 0o700)
-        func(path)
-
-
+import docx 
+import xlrd
+import openpyxl
+from .models import *
+import aspose.pdf as pdf
 
 def clean_text(text):
     
@@ -70,83 +25,193 @@ def clean_text(text):
     
     return cleaned_text.strip()
 
-def search_and_extract(source_text, tag, file_type, file_name, user="Test_User"):
+
+def search_doc(docx_path,tag,file_name,user="Test_User"):    
+    doc = docx.Document(docx_path)
+
+    extracted_data_exact = []
+    extracted_data_partial=[]
+    current_page = 1
+    # Iterate through paragraphs and store them with their paragraph number
+    for para_idx, para in enumerate(doc.paragraphs):
+        paragraph_text = para.text.strip()
+        if paragraph_text:  
+            exact_matches = list(re.finditer(rf"\b{re.escape(tag)}\b", paragraph_text, re.IGNORECASE))
+            partial_matches = list(re.finditer(rf"\w*{re.escape(tag)}\w*", paragraph_text, re.IGNORECASE))
+            for match in exact_matches:
+                match_start = match.start()
+                match_end = match.end()
+                line_index, line_text =find_line_and_number_within_paragraph(paragraph_text, match_start, match_end)
+                extracted_data_exact.append({
+                    "Source File Name": f"{file_name}",
+                    "File Type": 'Word',
+                    "Tag Searched": tag,
+                    "Block/Record": line_text,
+                    "Location of the Tag": f"Paragraph {para_idx+1}, Line {line_index})",
+                    "Date of Search": datetime.now().strftime("%B %d, %Y"),
+                    "Search Author": user,
+                    "Other": ""
+                })
+            for match in partial_matches:
+                matched_text = match.group()
+                if matched_text.lower() != tag.lower():  
+                    match_start = match.start()
+                    match_end = match.end()
+        
+                    line_index, line_text =find_line_and_number_within_paragraph(paragraph_text, match_start, match_end)
+                    extracted_data_partial.append({
+                        "Source File Name": f"{file_name}",
+                        "File Type": 'Word',
+                        "Tag Searched": tag,
+                        "Block/Record": line_text,
+                        "Location of the Tag": f"Page {current_page} (Paragraph {para_idx+1}, Line {line_index})",
+                        "Date of Search": datetime.now().strftime("%B %d, %Y"),
+                        "Search Author": user,
+                        "Other": "partial"
+                    })
     
-    sentence_pattern = re.compile(r'([^.?!]*\b' + re.escape(tag) + r'\b[^.?!]*[.?!])', re.IGNORECASE)
-
-    exact_matches = re.findall(sentence_pattern, source_text)
-
-    partial_matches = re.findall(r'([^.?!]*\w*' + re.escape(tag) + r'\w*[^.?!]*[.?!])', source_text, re.IGNORECASE)
-
-    extracted_data = []
-
-    for match in exact_matches:
-        highlighted_sentence = re.sub(rf"({tag})", r'**\1**', match, flags=re.IGNORECASE)
-        extracted_data.append({
-            "Source File Name": file_name,
-            "File Type": file_type,
-            "Tag Searched": tag,
-            "Block/Record Tag Found": highlighted_sentence,
-            "Location of the Tag": "Page 1, Section 2",  # Placeholder for actual location logic
-            "Date of Search": datetime.now().strftime("%B %d, %Y"),
-            "Search Author": user,
-            "Other": "Exact match"
-        })
-
-    for match in partial_matches:
-        if match.lower() != tag.lower():  
-            highlighted_sentence = re.sub(rf"({tag})", r'**\1**', match, flags=re.IGNORECASE)
-            extracted_data.append({
-                "Source File Name": file_name,
-                "File Type": file_type,
-                "Tag Searched": tag,
-                "Block/Record Tag Found": highlighted_sentence,
-                "Location of the Tag": "Page 1, Section 2",  # Placeholder for actual location logic
-                "Date of Search": datetime.now().strftime("%B %d, %Y"),
-                "Search Author": user,
-                "Other": "Partial match"
-            })
-
-    return extracted_data
+                # Check for page break in the paragraph's properties
+            if para.paragraph_format.page_break_before:
+                current_page += 1
 
 
-# import pdfplumber
-# import pytesseract
-# from PIL import Image, ImageEnhance, ImageFilter, ImageOps
-# import re
-# import numpy as np
+    return extracted_data_exact,extracted_data_partial 
 
-# class PDFTextExtractor:
-#     def __init__(self, file_path, header_height=100):
-#         self.file_path = file_path
-#         self.header_height = header_height
 
-#     def preprocess_image(self, image):
-#         image = image.convert('L')
-#         image = ImageOps.autocontrast(image)
-#         enhancer = ImageEnhance.Contrast(image)
-#         image = enhancer.enhance(2)
-#         image = image.filter(ImageFilter.SHARPEN)
-#         return image
+def find_line_and_number_within_paragraph(paragraph_text, tag_start, tag_end):
+    
+    if not isinstance(paragraph_text, str):
+        raise ValueError("The 'paragraph_text' should be of type 'str'.")
+    if not isinstance(tag_start, int) or not isinstance(tag_end, int):
+        raise ValueError("Both 'tag_start' and 'tag_end' should be of type 'int'.")
+    if tag_start < 0 or tag_end > len(paragraph_text) or tag_start > tag_end:
+        raise ValueError("Invalid 'tag_start' or 'tag_end' indices.")
 
-#     def crop_image_to_remove_header(self, image):
-#         width, height = image.size
-#         cropped_image = image.crop((0, self.header_height, width, height))
-#         return cropped_image
+    cumulative_length = 0
 
-#     def extract_text_with_ocr(self):
-#         text = ""
-#         with pdfplumber.open(self.file_path) as pdf:
-#             for page in pdf.pages:
-#                 image = page.to_image(resolution=400).original
-#                 pil_image = Image.fromarray(np.array(image))
-#                 cropped_image = self.crop_image_to_remove_header(pil_image)
-#                 processed_image = self.preprocess_image(cropped_image)
-#                 custom_oem_psm_config = r'--oem 3 --psm 6'
-#                 text += pytesseract.image_to_string(processed_image, lang='ara+eng', config=custom_oem_psm_config)
-#         return text
+    lines = paragraph_text.splitlines() if '\n' in paragraph_text else paragraph_text.split('. ')
 
-#     @staticmethod
-#     def extract_arabic(text):
-#         arabic_text = re.findall(r'[\u0600-\u06FF]+', text)
-#         return ' '.join(arabic_text)
+    # Iterate through lines to find the one containing the tag
+    for line_idx, line in enumerate(lines):
+        line_length = len(line) + 1  # +1 for the newline character
+
+        # Check if the tag's start index falls within the current line
+        if cumulative_length <= tag_start < cumulative_length + line_length:
+            line_relative_start = tag_start - cumulative_length
+            line_relative_end = tag_end - cumulative_length
+
+            return line_idx + 1 , line.strip()
+               
+            
+
+        cumulative_length += line_length
+
+    return None
+
+
+
+
+def extract_text_from_excel(excel_path,tag,file_name ,user="Test_User"):
+
+    extracted_data_exact = []
+    extracted_data_partial = []
+
+    def get_column_letter(column_index):
+        return openpyxl.utils.get_column_letter(column_index + 1)
+
+    if excel_path.endswith('.xls'):
+        workbook = xlrd.open_workbook(excel_path)
+        for sheet in workbook.sheets():
+            sheet_name = sheet.name
+            print(sheet_name)
+            for row_idx in range(sheet.nrows):
+                row = sheet.row(row_idx)
+                for col_idx, cell in enumerate(row):
+                    
+                    cell_text = str(cell.value)
+                    
+                    exact_matches = list(re.finditer(rf"\b{re.escape(tag)}\b", cell_text, re.IGNORECASE))
+                    for match in exact_matches:
+                        match_start = match.start()
+                        match_end = match.end()
+                        cell_letter = get_column_letter(col_idx)
+                        extracted_data_exact.append({
+                            "Source File Name": f"{file_name}",
+                            "File Type": 'Excel',
+                            "Tag Searched": tag,
+                            "Block/Record": cell_text,
+                            "Location of the Tag": f"Sheet:{sheet_name}, Row: {row_idx + 1}, Cell: {cell_letter}",
+                            "Date of Search": datetime.now().strftime("%B %d, %Y"),
+                            "Search Author": user,
+                            "Other": ""
+                        })
+
+                    # Find partial matches in the cell text
+                    partial_matches = list(re.finditer(rf"\w*{re.escape(tag)}\w*", cell_text, re.IGNORECASE))
+                    for match in partial_matches:
+                        matched_text = match.group()
+                        if matched_text.lower() != tag.lower():  # Avoid duplicates with exact matches
+                            match_start = match.start()
+                            match_end = match.end()
+                            cell_letter = get_column_letter(col_idx)
+                            extracted_data_partial.append({
+                                "Source File Name": f"{file_name}",
+                                "File Type": 'Excel',
+                                "Tag Searched": tag,
+                                "Block/Record": cell_text,
+                                "Location of the Tag": f"Sheet:{sheet_name}, Row: {row_idx + 1}, Cell: {cell_letter}",
+                                "Date of Search": datetime.now().strftime("%B %d, %Y"),
+                                "Search Author": user,
+                                "Other": "Partial match"
+                            })
+
+    elif excel_path.endswith('.xlsx'):
+        workbook = openpyxl.load_workbook(excel_path)
+        for sheet_name in workbook.sheetnames:
+            sheet = workbook[sheet_name]
+            for row_idx, row in enumerate(sheet.iter_rows(values_only=True), start=1):
+                for col_idx, cell in enumerate(row):
+                    if cell is not None:
+                        cell_text = str(cell)
+                        
+                        # Find exact matches in the cell text
+                        exact_matches = list(re.finditer(rf"\b{re.escape(tag)}\b", cell_text, re.IGNORECASE))
+                        for match in exact_matches:
+                            match_start = match.start()
+                            match_end = match.end()
+                            cell_letter = get_column_letter(col_idx)
+                            extracted_data_exact.append({
+                                "Source File Name": f"{excel_path}",
+                                "File Type": 'Excel',
+                                "Tag Searched": tag,
+                                "Block/Record": cell_text,
+                                "Location of the Tag": f"Sheet:{sheet_name} Row: {row_idx}, Cell: {cell_letter}",
+                                "Date of Search": datetime.now().strftime("%B %d, %Y"),
+                                "Search Author": user,
+                                "Other": ""
+                            })
+
+                        # Find partial matches in the cell text
+                        partial_matches = list(re.finditer(rf"\w*{re.escape(tag)}\w*", cell_text, re.IGNORECASE))
+                        for match in partial_matches:
+                            matched_text = match.group()
+                            if matched_text.lower() != tag.lower():  # Avoid duplicates with exact matches
+                                match_start = match.start()
+                                match_end = match.end()
+                                cell_letter = get_column_letter(col_idx)
+                                extracted_data_partial.append({
+                                    "Source File Name": f"{excel_path}",
+                                    "File Type": 'Excel',
+                                    "Tag Searched": tag,
+                                    "Block/Record": cell_text,
+                                    "Location of the Tag": f" Sheet:{sheet_name} Row: {row_idx}, Cell: {cell_letter}",
+                                    "Date of Search": datetime.now().strftime("%B %d, %Y"),
+                                    "Search Author": user,
+                                    "Other": "Partial match"
+                                })
+    return extracted_data_exact , extracted_data_partial
+
+
+
+
+
