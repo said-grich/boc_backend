@@ -9,8 +9,8 @@ import PyPDF2
 import docx    
 import xlrd   
 import openpyxl
-from .utils import *
-from .models import *
+from .excel_controller import *
+from .pdf_controller import *
 import shutil
 import time
 import chardet
@@ -58,9 +58,11 @@ class SearchView(APIView):
                     
                     elif uploaded_file.name.endswith('.pdf'):
                         file_type = "PDF"
-                        start_time = time.time()  # Record the start time
+                        start_time = time.time()
+                        text_data=read_pdf_file(file_path)
+                        
                         for tag in tag_names:
-                            result_exact, result_partial=read_pdf_file(file_path,tag,uploaded_file.name,user="Test_User")
+                            result_exact, result_partial=search_pdf(text_data, tag,  uploaded_file.name, user="Test_User")
                             results_by_tag_exact[tag]+=result_exact
                             results_by_tag_partial[tag]+=result_partial
                         end_time = time.time()  
@@ -69,9 +71,9 @@ class SearchView(APIView):
                         
                     elif uploaded_file.name.endswith('.docx'):
                         file_type = "Word"
-                        
+                        text_data=read_doc_file(file_path)
                         for tag in tag_names:
-                            result_exact,result_partial= search_doc(file_path,tag,uploaded_file.name,user="Test_User")
+                            result_exact,result_partial= search_pdf(text_data, tag,  uploaded_file.name, user="Test_User")
                             results_by_tag_exact[tag]+=result_exact
                             results_by_tag_partial[tag]+=result_partial
                             

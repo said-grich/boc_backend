@@ -5,12 +5,9 @@ import PyPDF2
 import docx    
 import xlrd   
 import openpyxl
-from .utils import *
-from .models import *
 import shutil
 import time
 import chardet
-from .utils import *
 
 
 def clean_text_git(text):
