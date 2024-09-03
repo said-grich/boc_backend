@@ -3,7 +3,6 @@ from PIL import Image
 import pytesseract
 from spire.pdf import *
 from spire.pdf.common import *
-from transformers import pipeline
 import concurrent.futures
 import re
 import numpy as np
@@ -12,11 +11,6 @@ from PIL import Image, ImageOps, ImageEnhance, ImageFilter
 import pytesseract
 import threading
 from datetime import datetime
-from docx import Document
-from fpdf import FPDF
-import io
-from docx2pdf import convert
-from tempfile import NamedTemporaryFile
 import shutil
 import subprocess
 
@@ -190,7 +184,7 @@ def read_doc_with_fitz(pdf_path):
 
 
 
-def search_pdf(text_dict, tag, file_name, user="Test_User"):
+def search_pdf(text_dict, tag, file_name,file_type,user="Test_User"):
     extracted_data_exact = []
     extracted_data_partial = []
 
@@ -198,7 +192,6 @@ def search_pdf(text_dict, tag, file_name, user="Test_User"):
         lines = [line for line in text.splitlines() if line.strip()]
         for line_index, line_text in enumerate(lines):
             if line_text.strip():
-                print(line_text ,"=============>" +str(line_index)) # Only process non-empty lines
                 exact_matches = list(re.finditer(rf"\b{re.escape(tag)}\b", line_text, re.IGNORECASE))
                 partial_matches = list(re.finditer(rf"\w*{re.escape(tag)}\w*", line_text, re.IGNORECASE))
                 
@@ -206,7 +199,7 @@ def search_pdf(text_dict, tag, file_name, user="Test_User"):
                 for match in exact_matches:
                     extracted_data_exact.append({
                         "Source File Name": file_name,
-                        "File Type": 'Pdf',
+                        "File Type": f"{file_type}",
                         "Tag Searched": tag,
                         "Block/Record": line_text.strip(),
                         "Location of the Tag": f"{page_num}, Line {line_index + 1}",
@@ -221,13 +214,13 @@ def search_pdf(text_dict, tag, file_name, user="Test_User"):
                     if matched_text.lower() != tag.lower():  # Exclude exact matches
                         extracted_data_partial.append({
                             "Source File Name": file_name,
-                            "File Type": 'Pdf',
+                            "File Type": f"{file_type}",
                             "Tag Searched": tag,
                             "Block/Record": line_text.strip(),
                             "Location of the Tag": f"{page_num}, Line {line_index + 1}",
                             "Date of Search": datetime.now().strftime("%B %d, %Y"),
                             "Search Author": user,
-                            "Other": "partial"
+                            "Other": ""
                         })
 
     return extracted_data_exact, extracted_data_partial
