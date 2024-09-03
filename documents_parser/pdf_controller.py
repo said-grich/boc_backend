@@ -1,3 +1,4 @@
+import uuid
 import fitz  
 from PIL import Image
 import pytesseract
@@ -121,7 +122,8 @@ def rename_docx_file(docx_path):
     Create a renamed copy of the DOCX file with a random unique name.
     """
     # Generate a random unique filename for the temporary DOCX file
-    random_filename = f"{uuid.uuid4()}.docx"
+    file_name=docx_path.split(".")[0]
+    random_filename = f"file_name_{uuid.uuid1()}.docx"
     temp_docx_path = os.path.join("/tmp", random_filename)
 
     # Copy and rename the original DOCX file to the new path
@@ -135,7 +137,7 @@ def convert_docx_to_pdf_with_libreoffice(temp_docx_path):
     """
     # Define the output directory
     output_dir = "/tmp"
-    
+    temp_docx_path=rename_docx_file(temp_docx_path)
     # Convert DOCX to PDF using LibreOffice command-line tool
     try:
         result = subprocess.run(
