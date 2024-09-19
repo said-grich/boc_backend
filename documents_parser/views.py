@@ -105,7 +105,7 @@ class SearchView(APIView):
 
     def extract_text_from_docx(self, docx_path):
         doc = docx.Document(docx_path)
-        return [para.text for para in doc.paragraphs]
+        return "\n".join([para.text for para in doc.paragraphs])
 
     def extract_text_from_excel(self, excel_path):
         text_data = []
