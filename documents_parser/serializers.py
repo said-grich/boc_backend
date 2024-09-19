@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from .models import ExtractedData
 
 class GitHubSearchSerializer(serializers.Serializer):
     github_url = serializers.URLField(label='GitHub Repository URL', required=False)
@@ -21,3 +22,10 @@ class SearchSerializer(serializers.Serializer):
         if not value:
             raise serializers.ValidationError("At least one file must be provided.")
         return value
+
+
+
+class ExtractedDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExtractedData
+        fields = '__all__'

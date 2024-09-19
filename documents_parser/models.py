@@ -14,7 +14,7 @@ class ExtractedData(models.Model):
     tag_searched = models.CharField(max_length=255)
     block_record = models.TextField()
     location_of_tag = models.CharField(max_length=100)
-    date_of_search = models.DateField(auto_now_add=True)  # Automatically set the date of search to the current date
+    date_of_search = models.DateTimeField(auto_now_add=True)  
     search_author = models.CharField(max_length=100)  # Changed to CharField temporarily
     # search_author = models.ForeignKey(User, on_delete=models.CASCADE)  # Link to User table
     match_type = models.CharField(max_length=10, choices=MATCH_TYPE_CHOICES)  # New field for match type
@@ -22,7 +22,7 @@ class ExtractedData(models.Model):
     line_id = models.CharField(max_length=50, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.source_file_name} - {self.tag_searched} ({self.match_type})"
+        return f"{self.search_id} - {self.source_file_name} - {self.tag_searched} ({self.match_type} - {self.date_of_search} - {self.search_author})"
 
     def save(self, *args, **kwargs):
         if not self.line_id:

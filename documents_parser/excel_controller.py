@@ -1,13 +1,5 @@
-import os
-import zipfile
-import git
-import tempfile
-import shutil
-import os
 import re
-import numpy as np
 from datetime import datetime
-import docx 
 import xlrd
 import openpyxl
 
@@ -23,7 +15,6 @@ def extract_text_from_excel(excel_path,tag,file_name ,user="Test_User"):
         workbook = xlrd.open_workbook(excel_path)
         for sheet in workbook.sheets():
             sheet_name = sheet.name
-            print(sheet_name)
             for row_idx in range(sheet.nrows):
                 row = sheet.row(row_idx)
                 for col_idx, cell in enumerate(row):
@@ -32,8 +23,7 @@ def extract_text_from_excel(excel_path,tag,file_name ,user="Test_User"):
                     
                     exact_matches = list(re.finditer(rf"\b{re.escape(tag)}\b", cell_text, re.IGNORECASE))
                     for match in exact_matches:
-                        match_start = match.start()
-                        match_end = match.end()
+
                         cell_letter = get_column_letter(col_idx)
                         extracted_data_exact.append({
                             "Source File Name": f"{file_name}",
@@ -41,7 +31,7 @@ def extract_text_from_excel(excel_path,tag,file_name ,user="Test_User"):
                             "Tag Searched": tag,
                             "Block/Record": cell_text,
                             "Location of the Tag": f"Sheet:{sheet_name}, Row: {row_idx + 1}, Cell: {cell_letter}",
-                            "Date of Search": datetime.now().strftime("%B %d, %Y"),
+                            "Date of Search": datetime.now().strftime("%B %d, %Y %H:%M:%S"),
                             "Search Author": user,
                             "Other": ""
                         })
@@ -51,8 +41,7 @@ def extract_text_from_excel(excel_path,tag,file_name ,user="Test_User"):
                     for match in partial_matches:
                         matched_text = match.group()
                         if matched_text.lower() != tag.lower():  # Avoid duplicates with exact matches
-                            match_start = match.start()
-                            match_end = match.end()
+
                             cell_letter = get_column_letter(col_idx)
                             extracted_data_partial.append({
                                 "Source File Name": f"{file_name}",
@@ -60,7 +49,7 @@ def extract_text_from_excel(excel_path,tag,file_name ,user="Test_User"):
                                 "Tag Searched": tag,
                                 "Block/Record": cell_text,
                                 "Location of the Tag": f"Sheet:{sheet_name}, Row: {row_idx + 1}, Cell: {cell_letter}",
-                                "Date of Search": datetime.now().strftime("%B %d, %Y"),
+                                "Date of Search": datetime.now().strftime("%B %d, %Y %H:%M:%S"),
                                 "Search Author": user,
                                 "Other": "Partial match"
                             })
@@ -77,8 +66,7 @@ def extract_text_from_excel(excel_path,tag,file_name ,user="Test_User"):
                         # Find exact matches in the cell text
                         exact_matches = list(re.finditer(rf"\b{re.escape(tag)}\b", cell_text, re.IGNORECASE))
                         for match in exact_matches:
-                            match_start = match.start()
-                            match_end = match.end()
+
                             cell_letter = get_column_letter(col_idx)
                             extracted_data_exact.append({
                                 "Source File Name": f"{excel_path}",
@@ -86,7 +74,7 @@ def extract_text_from_excel(excel_path,tag,file_name ,user="Test_User"):
                                 "Tag Searched": tag,
                                 "Block/Record": cell_text,
                                 "Location of the Tag": f"Sheet:{sheet_name} Row: {row_idx}, Cell: {cell_letter}",
-                                "Date of Search": datetime.now().strftime("%B %d, %Y"),
+                                "Date of Search": datetime.now().strftime("%B %d, %Y %H:%M:%S"),
                                 "Search Author": user,
                                 "Other": ""
                             })
@@ -96,8 +84,7 @@ def extract_text_from_excel(excel_path,tag,file_name ,user="Test_User"):
                         for match in partial_matches:
                             matched_text = match.group()
                             if matched_text.lower() != tag.lower():  # Avoid duplicates with exact matches
-                                match_start = match.start()
-                                match_end = match.end()
+
                                 cell_letter = get_column_letter(col_idx)
                                 extracted_data_partial.append({
                                     "Source File Name": f"{excel_path}",
@@ -105,7 +92,7 @@ def extract_text_from_excel(excel_path,tag,file_name ,user="Test_User"):
                                     "Tag Searched": tag,
                                     "Block/Record": cell_text,
                                     "Location of the Tag": f" Sheet:{sheet_name} Row: {row_idx}, Cell: {cell_letter}",
-                                    "Date of Search": datetime.now().strftime("%B %d, %Y"),
+                                    "Date of Search": datetime.now().strftime("%B %d, %Y %H:%M:%S"),
                                     "Search Author": user,
                                     "Other": "Partial match"
                                 })

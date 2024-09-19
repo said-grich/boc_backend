@@ -1,14 +1,11 @@
-import zipfile
-import tempfile
-import os
-import PyPDF2  
-import docx    
-import xlrd   
-import openpyxl
-import shutil
-import time
-import chardet
+from datetime import datetime
 
+import os
+import chardet
+import re
+
+from documents_parser.excel_controller import extract_text_from_excel
+from .pdf_controller import read_pdf_file, read_doc_file ,search_pdf
 
 def clean_text_git(text):
     
@@ -24,26 +21,33 @@ def read_all_files_in_directory(directory):
     binary_extensions = ['.dll', '.exe', '.bin', '.dat', '.o', '.so', '.class', '.pyc', '.pyo', '.a', '.lib', '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.ico', '.zip', '.gz','yml',".jar",".class"]
     data_dict={}
     for root, dirs, files in os.walk(directory):
-        for file in files:
-            file_path = os.path.join(root, file)
-            if file.startswith('.') or any(file.lower().endswith(ext) for ext in binary_extensions):
+        for file_name in files:
+            file_path = os.path.join(root, file_name)
+            if file_name.startswith('.') or any(file_name.lower().endswith(ext) for ext in binary_extensions):
                 print(f"Skipping excluded or binary file: {file_path}")
                 continue
             print(f"Processing file: {file_path}")
-            data_dict[file]={}
-            data_dict[file]["content"]=""
+            data_dict[file_name]={}
+            data_dict[file_name]["content"]=""
+            
             # try:
-            if file.lower().endswith('.docx'):
-                
-                extracted_text = extract_text_from_docx(file_path)
+            
+            if file_name.lower().endswith('.pdf'):
+                extracted_text=read_pdf_file(file_path)
                 if extracted_text: 
-                    data_dict[file]["content"]=extracted_text
-            elif file.lower().endswith('.xls') or file.lower().endswith('.xlsx'):
-                extracted_text = extract_text_from_excel(file_path)
-                if extracted_text:  
-                    data_dict[file]["content"]=extracted_text
-            else:
+                    data_dict[file_name]["content"]=extracted_text
                 
+            elif file_name.lower().endswith('.docx'):
+                extracted_text=read_doc_file(file_path)
+                if extracted_text: 
+                    data_dict[file_name]["content"]=extracted_text
+                    
+            elif file_name.lower().endswith('.xls') or file_name.lower().endswith('.xlsx'):
+                
+                data_dict[file_name]["content"]=file_path
+                    
+                    
+            else:
                 with open(file_path, 'rb') as f:
                     raw_data = f.read()
 
@@ -58,11 +62,13 @@ def read_all_files_in_directory(directory):
                     try:
                         with open(file_path, 'r', encoding=encoding, errors='ignore') as text_file:
                             content = text_file.read()
-                            data_dict[file]["content"]=content
+                            data_dict[file_name]["content"]=content
                     except UnicodeDecodeError as e:
                         print(f"UnicodeDecodeError reading {file_path} with encoding {encoding}: {e}")
                         continue
     return data_dict
+
+
 
 def search_github(tag,zip_name,data_dict , user="Test_User"):
     extracted_data_exact=[]
@@ -72,46 +78,62 @@ def search_github(tag,zip_name,data_dict , user="Test_User"):
         content=data_dict[file_name]["content"];
         file_type=file_name.split(".")[-1]
         
-        exact_matches = list(re.finditer(rf"\b{re.escape(tag)}\b", content, re.IGNORECASE))
-        partial_matches = list(re.finditer(rf"\w*{re.escape(tag)}\w*", content, re.IGNORECASE))
+        if file_name.lower().endswith('.pdf'):
+            result_exact, result_partial = search_pdf(content, tag, f"{zip_name}/{file_name}", "PDF", user)
+            extracted_data_exact+=result_exact
+            extracted_data_partial+=result_partial
+        
+        elif file_name.lower().endswith('.docx'):
+            result_exact, result_partial = search_pdf(content, tag, f"{zip_name}/{file_name}", "Word", user)
+            extracted_data_exact+=result_exact
+            extracted_data_partial+=result_partial
+        elif file_name.lower().endswith('.xls') or file_name.lower().endswith('.xlsx'):
+            file_path=data_dict[file_name]["content"]
+            result_exact, result_partial =extract_text_from_excel(file_path, tag, f"{zip_name}/{file_name}", user)
+            extracted_data_exact+=result_exact
+            extracted_data_partial+=result_partial
+        else:
+        
+            exact_matches = list(re.finditer(rf"\b{re.escape(tag)}\b", content, re.IGNORECASE))
+            partial_matches = list(re.finditer(rf"\w*{re.escape(tag)}\w*", content, re.IGNORECASE))
 
-        for match in exact_matches:
-            match_start = match.start()
-            match_end = match.end()
-            
-            highlighted_sentence = find_line_by_indices(content,match_start,match_end)
-            
-            line_number,col_number=find_column_in_line(content, highlighted_sentence, tag)
-            extracted_data_exact.append({
-                "Source File Name": f"{zip_name}/{file_name}",
-                "File Type": file_type,
-                "Tag Searched": tag,
-                "Block/Record": highlighted_sentence,
-                "Location of the Tag": f"{file_name} (Ln {line_number}, Col {col_number[0]})",
-                "Date of Search": datetime.now().strftime("%B %d, %Y"),
-                "Search Author": user,
-                "Other": ""
-            })
-
-        for match in partial_matches:
-            matched_text = match.group()
-            if matched_text.lower() != tag.lower():  
+            for match in exact_matches:
                 match_start = match.start()
                 match_end = match.end()
-    
+                
                 highlighted_sentence = find_line_by_indices(content,match_start,match_end)
                 
                 line_number,col_number=find_column_in_line(content, highlighted_sentence, tag)
-                extracted_data_partial.append({
+                extracted_data_exact.append({
                     "Source File Name": f"{zip_name}/{file_name}",
                     "File Type": file_type,
                     "Tag Searched": tag,
                     "Block/Record": highlighted_sentence,
                     "Location of the Tag": f"{file_name} (Ln {line_number}, Col {col_number[0]})",
-                    "Date of Search": datetime.now().strftime("%B %d, %Y"),
+                    "Date of Search": datetime.now().strftime("%B %d, %Y %H:%M:%S"),
                     "Search Author": user,
-                    "Other": "Partial match"
+                    "Other": ""
                 })
+
+            for match in partial_matches:
+                matched_text = match.group()
+                if matched_text.lower() != tag.lower():  
+                    match_start = match.start()
+                    match_end = match.end()
+        
+                    highlighted_sentence = find_line_by_indices(content,match_start,match_end)
+                    
+                    line_number,col_number=find_column_in_line(content, highlighted_sentence, tag)
+                    extracted_data_partial.append({
+                        "Source File Name": f"{zip_name}/{file_name}",
+                        "File Type": file_type,
+                        "Tag Searched": tag,
+                        "Block/Record": highlighted_sentence,
+                        "Location of the Tag": f"{file_name} (Ln {line_number}, Col {col_number[0]})",
+                        "Date of Search": datetime.now().strftime("%B %d, %Y %H:%M:%S"),
+                        "Search Author": user,
+                        "Other": "Partial match"
+                    })
 
     return extracted_data_exact , extracted_data_partial
 

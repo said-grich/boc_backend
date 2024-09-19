@@ -118,12 +118,9 @@ def extract_text_with_ocr(file_path, header_height=5, resolution=300, enhance_co
 
 
 def rename_docx_file(docx_path):
-    """
-    Create a renamed copy of the DOCX file with a random unique name.
-    """
-    # Generate a random unique filename for the temporary DOCX file
+
     file_name=docx_path.split(".")[0]
-    random_filename = f"file_name_{uuid.uuid1()}.docx"
+    random_filename = f"{file_name}_{uuid.uuid1()}.docx"
     temp_docx_path = os.path.join("/tmp", random_filename)
 
     # Copy and rename the original DOCX file to the new path
@@ -205,7 +202,7 @@ def search_pdf(text_dict, tag, file_name,file_type,user="Test_User"):
                         "Tag Searched": tag,
                         "Block/Record": line_text.strip(),
                         "Location of the Tag": f"{page_num}, Line {line_index + 1}",
-                        "Date of Search": datetime.now().strftime("%B %d, %Y"),
+                        "Date of Search": datetime.now().strftime("%B %d, %Y %H:%M:%S"),
                         "Search Author": user,
                         "Other": ""
                     })
@@ -220,7 +217,7 @@ def search_pdf(text_dict, tag, file_name,file_type,user="Test_User"):
                             "Tag Searched": tag,
                             "Block/Record": line_text.strip(),
                             "Location of the Tag": f"{page_num}, Line {line_index + 1}",
-                            "Date of Search": datetime.now().strftime("%B %d, %Y"),
+                            "Date of Search": datetime.now().strftime("%B %d, %Y %H:%M:%S"),
                             "Search Author": user,
                             "Other": ""
                         })

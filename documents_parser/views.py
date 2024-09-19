@@ -1,13 +1,15 @@
 
 
+from datetime import datetime
 from django.http import HttpResponse
+import pytz
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
 from documents_parser.models import ExtractedData
 from .serializers import SearchSerializer
-from .services import process_uploaded_file, save_results_to_db, append_dicts
+from .services import calculate_summary_statistics, format_results_by_file, process_uploaded_file, save_results_to_db, append_dicts, serialize_formatted_results
 import tempfile
 import os
 import shutil
@@ -34,11 +36,12 @@ class SearchView(APIView):
                 for uploaded_file in uploaded_files:
                     file_path = os.path.join(temp_dir, uploaded_file.name)
                     
+                    
                     with open(file_path, 'wb') as f:
                         for chunk in uploaded_file.chunks():
                             f.write(chunk)
 
-                    try:
+                    # try:
                         file_type,results_exact, results_partial= process_uploaded_file(file_path, uploaded_file.name, tag_names, user)
                         results_by_tag_exact=append_dicts(results_exact, results_by_tag_exact)
                         results_by_tag_partial=append_dicts(results_partial, results_by_tag_partial)
@@ -46,21 +49,17 @@ class SearchView(APIView):
    
 
 
-                    except ValueError as e:
-                        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                    # except ValueError as e:
+                    #     return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
                 
 
                 # Save results to DB
-                saved_exact_results ,saved_partial_results =save_results_to_db(results_by_tag_exact,results_by_tag_partial ,uploaded_file.name, file_type, user)
+                search_id =save_results_to_db(results_by_tag_exact,results_by_tag_partial ,uploaded_file.name, file_type, user)
+                search_results = format_results_by_file(search_id)
+                serialized_formatted_results = serialize_formatted_results(search_results)
+                summary_statistics = calculate_summary_statistics(serialized_formatted_results)
                 
-                serialized_exact_results = [
-                    {**model_to_dict(result), 'search_id': str(result.search_id)} for result in saved_exact_results
-                ]
-                serialized_partial_results = [
-                    {**model_to_dict(result), 'search_id': str(result.search_id)} for result in saved_partial_results
-                ]
-
-                return Response({"results_exact": serialized_exact_results, "results_partial": serialized_partial_results}, status=status.HTTP_200_OK)
+                return Response({"results":serialized_formatted_results,"summary":summary_statistics}, status=status.HTTP_200_OK)
 
             finally:
                 if temp_dir and os.path.exists(temp_dir):
@@ -74,25 +73,24 @@ class ExportSearchResultsView(APIView):
     def get(self, request, search_id):
         # try:
             # Retrieve the search results from the database using the search_id
-            search_results = ExtractedData.objects.filter(search_id=search_id)
+            search_results = format_results_by_file(search_id)
+            serialized_results = serialize_formatted_results(search_results)
+            datetime_string = next(iter(serialized_results.items()))[1]["exact_matches"][0]["date_of_search"]
+            datetime_string_file= datetime_string.split('.')[0]
+            datetime_obj = datetime.strptime(datetime_string, "%Y-%m-%dT%H:%M:%S.%fZ")
             
-            if not search_results.exists():
-                return Response({"error": "No results found for the provided search_id."}, status=status.HTTP_404_NOT_FOUND)
 
-            # Extract relevant information for filename
-            source_file_name = search_results.first().source_file_name.split(".")[0]
-            date_of_search = search_results.first().date_of_search.strftime("%Y-%m-%d")  # Format the date
-            search_author = search_results.first().search_author
+            # Convert to a timezone-aware datetime object in UTC
+            datetime_obj = datetime_obj.replace(tzinfo=pytz.UTC)
 
-            # Prepare the filename using the format: search_result_<name_of_file>_<date_of_search>_<username>.docx
-            filename = f"search_result_{source_file_name}_{date_of_search}_{search_author}.docx"
 
-            # Generate the Word document from the search results
-            word_document = export_search_results_to_word(search_results, source_file_name)
+            user_name = next(iter(serialized_results.items()))[1]["exact_matches"][0]["search_author"] 
+
+            word_document = export_search_results_to_word(serialized_results, search_id, datetime_obj, user_name)
 
             # Create a response with the Word document as an attachment
             response = HttpResponse(word_document, content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            response['Content-Disposition'] = f'attachment; filename="search_result_{search_id}_{user_name}_{datetime_string_file}".docx'
 
             return response
 
