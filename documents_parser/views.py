@@ -1,124 +1,98 @@
+
+
+from datetime import datetime
+from django.http import HttpResponse
+import pytz
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+
+from documents_parser.models import ExtractedData
 from .serializers import SearchSerializer
-import zipfile
+from .services import calculate_summary_statistics, format_results_by_file, process_uploaded_file, save_results_to_db, append_dicts, serialize_formatted_results
 import tempfile
 import os
-import PyPDF2  
-import docx    
-import xlrd   
-import openpyxl
-from .utils import *
-from .models import *
 import shutil
-import time
+import gc
+from django.forms.models import model_to_dict
 
- 
+from .services import export_search_results_to_word
+
 class SearchView(APIView):
     def post(self, request):
         serializer = SearchSerializer(data=request.data)
         if serializer.is_valid():
             uploaded_files = request.FILES.getlist('files')
-            tag_name = serializer.validated_data.get('tag_name')
-            print(f"Tag ====>{tag_name}")
+            tag_names = serializer.validated_data.get('tag_names')
+            user = "Test_User"  # Replace with actual user when integrating auth
             temp_dir = None
-            result = []  # List to hold text data from all files
+            
+            results_by_tag_exact = {tag: [] for tag in tag_names}
+            results_by_tag_partial = {tag: [] for tag in tag_names}
 
             try:
                 temp_dir = tempfile.mkdtemp()  # Create a temporary directory
 
                 for uploaded_file in uploaded_files:
-                    file_type = None
                     file_path = os.path.join(temp_dir, uploaded_file.name)
+                    
+                    
                     with open(file_path, 'wb') as f:
                         for chunk in uploaded_file.chunks():
                             f.write(chunk)
-                    
-                    # Determine the file type and process accordingly
-                    if uploaded_file.name.endswith('.zip'):
-                        file_type = "Github"
-                        # Use GitHubUtils for handling .zip files
-                        github_utils = GitHubUtils()
-                        with zipfile.ZipFile(file_path, 'r') as zip_ref:
-                            zip_ref.extractall(temp_dir)
-                        text_data = self.read_all_files_in_directory(temp_dir)
-                        github_utils.cleanup(temp_dir)  # Clean up the extracted files
-                    elif uploaded_file.name.endswith('.pdf'):
-                        file_type = "PDF"
-                        start_time = time.time()  # Record the start time
 
-                        text_data = self.extract_text_from_pdf(file_path)  # Process PDF
+                    # try:
+                        file_type,results_exact, results_partial= process_uploaded_file(file_path, uploaded_file.name, tag_names, user)
+                        results_by_tag_exact=append_dicts(results_exact, results_by_tag_exact)
+                        results_by_tag_partial=append_dicts(results_partial, results_by_tag_partial)
+                        
+   
 
-                        end_time = time.time()  # Record the end time
-                        elapsed_time = end_time - start_time
-                        print(f"Time ------------{elapsed_time}")
-                    elif uploaded_file.name.endswith('.docx'):
-                        file_type = "WORD"
-                        text_data = self.extract_text_from_docx(file_path)
-                    elif uploaded_file.name.endswith('.xls') or uploaded_file.name.endswith('.xlsx'):
-                        file_type = "EXCEL"
-                        text_data = self.extract_text_from_excel(file_path)
-                    else:
-                        return Response({"error": f"Unsupported file format: {uploaded_file.name}"}, status=status.HTTP_400_BAD_REQUEST)
-                    
-                    # Perform the search and extraction
-                    result += search_and_extract(text_data, tag_name, file_type, uploaded_file.name)
-                    
-                    # Clear the text data to free up memory
-                    del text_data
-                    import gc
-                    gc.collect()  # Force garbage collection after each file
 
-                return Response({"results": result}, status=status.HTTP_200_OK)
-            except Exception as e:
-                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                    # except ValueError as e:
+                    #     return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                
+
+                # Save results to DB
+                search_id =save_results_to_db(results_by_tag_exact,results_by_tag_partial ,uploaded_file.name, file_type, user)
+                search_results = format_results_by_file(search_id)
+                serialized_formatted_results = serialize_formatted_results(search_results)
+                summary_statistics = calculate_summary_statistics(serialized_formatted_results)
+                
+                return Response({"results":serialized_formatted_results,"summary":summary_statistics}, status=status.HTTP_200_OK)
+
             finally:
                 if temp_dir and os.path.exists(temp_dir):
-                    shutil.rmtree(temp_dir)  # Ensure the temporary directory is cleaned up
+                    shutil.rmtree(temp_dir)
+                gc.collect()
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def read_all_files_in_directory(self, directory):
-        text_data = []
-        for root, dirs, files in os.walk(directory):
-            for file in files:
-                file_path = os.path.join(root, file)
-                if file.endswith('.txt'):
-                    with open(file_path, 'r') as f:
-                        text_data.append(f.read())
-                # Add more conditions here if needed for other file types within zip
-        return text_data
 
-    def extract_text_from_pdf(self, pdf_path):
-        # Ensure semaphore initialization and processing is done correctly
-        init_semaphore(max_workers=2)  # Initialize semaphore
-        text_data = extract_text_with_ocr(
-            pdf_path,
-            header_height=50,
-            resolution=200,
-            enhance_contrast=True,
-            sharpen_image=False,
-            use_parallel=True,
-            max_workers=1
-        )
-        return text_data
+class ExportSearchResultsView(APIView):
+    def get(self, request, search_id):
+        # try:
+            # Retrieve the search results from the database using the search_id
+            search_results = format_results_by_file(search_id)
+            serialized_results = serialize_formatted_results(search_results)
+            datetime_string = next(iter(serialized_results.items()))[1]["exact_matches"][0]["date_of_search"]
+            datetime_string_file= datetime_string.split('.')[0]
+            datetime_obj = datetime.strptime(datetime_string, "%Y-%m-%dT%H:%M:%S.%fZ")
+            
 
-    def extract_text_from_docx(self, docx_path):
-        doc = docx.Document(docx_path)
-        return "\n".join([para.text for para in doc.paragraphs])
+            # Convert to a timezone-aware datetime object in UTC
+            datetime_obj = datetime_obj.replace(tzinfo=pytz.UTC)
 
-    def extract_text_from_excel(self, excel_path):
-        text_data = []
-        if excel_path.endswith('.xls'):
-            workbook = xlrd.open_workbook(excel_path)
-            for sheet in workbook.sheets():
-                for row_idx in range(sheet.nrows):
-                    row = sheet.row(row_idx)
-                    text_data.append(", ".join([str(cell.value) for cell in row]))
-        elif excel_path.endswith('.xlsx'):
-            workbook = openpyxl.load_workbook(excel_path)
-            for sheet_name in workbook.sheetnames:
-                sheet = workbook[sheet_name]
-                for row in sheet.iter_rows(values_only=True):
-                    text_data.append(", ".join([str(cell) for cell in row if cell is not None]))
-        return text_data
+
+            user_name = next(iter(serialized_results.items()))[1]["exact_matches"][0]["search_author"] 
+
+            word_document = export_search_results_to_word(serialized_results, search_id, datetime_obj, user_name)
+
+            # Create a response with the Word document as an attachment
+            response = HttpResponse(word_document, content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+            response['Content-Disposition'] = f'attachment; filename="search_result_{search_id}_{user_name}_{datetime_string_file}".docx'
+
+            return response
+
+        # except Exception as e:
+        #     return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
