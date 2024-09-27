@@ -23,8 +23,11 @@ This is a Django project with Django REST framework.
 3. **Install the dependencies:**
    ```
    pip install -r requirements.txt
-4. **Run the development server:**
+
+4. **Build docker image:**
    ```
-   python manage.py makemigrations
-   python manage.py migrate
-   python manage.py runserver
+   docker-compose build
+   docker-compose up
+   docker-compose exec web python manage.py migrate
+
+ 
