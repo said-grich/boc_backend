@@ -25,6 +25,7 @@ RUN apt-get update && apt-get install -y \
     tesseract-ocr-ara \
     libtesseract-dev \
     libleptonica-dev \
+    libreoffice \
     && apt-get clean
 
 # Copy the rest of the application code into the container
