@@ -3,6 +3,8 @@ from datetime import datetime
 import tempfile
 import zipfile
 
+import pytz
+
 from documents_parser.serializers import ExtractedDataSerializer
 from .models import ExtractedData  # Import your Django model
 from .excel_controller import *
@@ -355,3 +357,21 @@ def clean_text(text):
     # Remove NULL bytes and other control characters
     cleaned_text = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', text)
     return cleaned_text
+
+
+def exportAsWord_using_Search_id(search_id):
+            search_results = format_results_by_file(search_id)
+            serialized_results = serialize_formatted_results(search_results)
+            datetime_string = next(iter(serialized_results.items()))[1]["exact_matches"][0]["date_of_search"]
+            datetime_string_file= datetime_string.split('.')[0]
+            datetime_obj = datetime.strptime(datetime_string, "%Y-%m-%dT%H:%M:%S.%fZ")
+            
+
+            # Convert to a timezone-aware datetime object in UTC
+            datetime_obj = datetime_obj.replace(tzinfo=pytz.UTC)
+
+
+            user_name = next(iter(serialized_results.items()))[1]["exact_matches"][0]["search_author"] 
+
+            word_document = export_search_results_to_word(serialized_results, search_id, datetime_obj, user_name)
+            return word_document,user_name,datetime_string_file

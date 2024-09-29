@@ -53,10 +53,17 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'boc_backEnd.urls'
 
+STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [
+    BASE_DIR / "static",  # This will include static files located in the 'static/' directory at the project root
+]
+
+# Templates directory
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],  
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -68,7 +75,6 @@ TEMPLATES = [
         },
     },
 ]
-
 WSGI_APPLICATION = 'boc_backEnd.wsgi.application'
 
 

@@ -13,13 +13,13 @@ class ExtractedData(models.Model):
     file_type = models.CharField(max_length=10)
     tag_searched = models.CharField(max_length=255)
     block_record = models.TextField()
-    location_of_tag = models.CharField(max_length=100)
+    location_of_tag = models.CharField(max_length=255)
     date_of_search = models.DateTimeField(auto_now_add=True)  
-    search_author = models.CharField(max_length=100)  # Changed to CharField temporarily
+    search_author = models.CharField(max_length=255)  # Changed to CharField temporarily
     # search_author = models.ForeignKey(User, on_delete=models.CASCADE)  # Link to User table
     match_type = models.CharField(max_length=10, choices=MATCH_TYPE_CHOICES)  # New field for match type
-    other = models.CharField(max_length=100, blank=True)
-    line_id = models.CharField(max_length=50, blank=True, null=True)
+    other = models.CharField(max_length=255, blank=True)
+    line_id = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return f"{self.search_id} - {self.source_file_name} - {self.tag_searched} ({self.match_type} - {self.date_of_search} - {self.search_author})"
