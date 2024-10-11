@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title> EditProfile</title>
+    <link rel="stylesheet" href="sty.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Unicons CDN Link for Icons -->
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/thinline.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  </head>
+  <body>
+    <header class="header">
+      <nav class="nav">
+        <a href="#" class="nav_logo">BOCISearch</a>
+        <div class="dropdown">
+          <button class="dropdown-btn" onclick="toggleDropdown()">
+            <i class="fa-solid fa-bars"></i>
+            <!-- <span class="material-symbols-outlined expand-icon"> expand_more </span> -->
+          </button>
+    
+          <div class="dropdown-content" id="myDropdown">
+            <a href="#">
+              <!-- <span class="material-symbols-outlined"> cottage </span> -->
+              <i class="fa-solid fa-user"></i> Profile
+            </a>
+            <a href="#">
+              <!-- <span class="material-symbols-outlined">category</span> -->
+              <i class="fa-solid fa-clock-rotate-left"></i> Historic
+            </a>
+            <a href="#">
+              <!-- <span class="material-symbols-outlined">donut_large</span> -->
+              <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </a>  
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+<br><br>
+
+<div class="wrapper" style="width:1200px; height: 600px; display: flex; flex-direction: column;">
+    <!-- Titre -->
+    <div class="title" style="text-align: center; margin-bottom: 20px;">
+      <h1 style="font-family: 'Montserrat', sans-serif;">
+        EDIT PROFILE
+      </h1>
+    </div>
+  
+    <!-- Section principale avec flex pour aligner les deux parties -->
+    <div class="main-content" style="display: flex; justify-content: space-between;">
+  
+       <!-- Section gauche (Image de profil, infos utilisateur et déconnexion) -->
+    <div class="left-section" style="width: 22%; background-color: #f0f0f0; height: 510px; padding: 20px; border-radius: 8px; text-align: center;">
+        <!-- Image de profil -->
+        <div class="profile-pic" style="position: relative; margin-bottom: 15px;">
+          <img src="https://via.placeholder.com/100" alt="Profile Picture" style="border-radius: 50%; width: 100px; height: 100px;">
+          <!-- Bouton de modification d'image -->
+          <button style="position: absolute; bottom: 0; right: 0; background-color: #007BFF; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; font-size: 12px; cursor: pointer;">✎</button>
+        </div>
+        
+        <!-- Nom de l'utilisateur -->
+        <p><strong>John Doe</strong></p>
+        
+        <!-- Email de l'utilisateur -->
+        <p style="color: gray;">johndoe@example.com</p>
+        
+       <!-- Statistiques et liens rapides avant le bouton Logout -->
+
+  <br><br>
+   <!-- Menu -->
+   <div class="menu" style="text-align: left; margin: 20px 0;">
+    <ul style="list-style-type: none; padding: 0;">
+      <li style="margin-bottom: 10px;">
+        <i class="fa-solid fa-gear"></i>&nbsp;<a href="#" style="color: #000000; text-decoration: none;">Profile Settings</a>
+      </li>
+      <li style="margin-bottom: 10px;">
+        <i class="fa-solid fa-clock-rotate-left"></i>&nbsp;<a href="#" style="color: #000000; text-decoration: none;">Search History</a>
+      </li>
+      
+    </ul>
+  </div>
+<br><br><br>
+        <!-- Bouton de déconnexion -->
+        <button style="background-color: #FF4B4B; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px;">
+            <i class="fa-solid fa-right-from-bracket"></i>&nbsp;LOGOUT
+        </button>
+      </div>
+  
+      <!-- Section droite (Contenu principal) -->
+      <div class="right-section" style="width: 75%; background-color: #fff; height: 510px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); border-radius: 8px;">
+    <p style="margin-top: -1px;">
+      <i class="fa-regular fa-pen-to-square"></i>&nbsp;Update your profile details below.
+        <p>
+        
+        <!-- Formulaire d'édition -->
+        <div class="content">
+          <p>Change your Username</p>
+          <ul><input type="text" placeholder="username"></ul>
+  
+          <p>Change your Email</p>
+          <ul><input type="text" placeholder="Email"></ul>
+  
+          <p>New Password</p>
+          <ul><input type="password" placeholder="New Password"></ul>
+  
+          <p>Confirm Password</p>
+          <ul><input type="password" placeholder="Confirm Password"></ul>
+        </div>
+
+        <!-- Boutons -->
+        <div class="detail" style="margin-top: 20px;">
+           
+          <button style="background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px;">SAVE</button>
+          <button style="background-color: #cacaca; color: black; padding: 10px 20px; border: none; border-radius: 5px; margin-left: 10px;">
+            <i class="fa-solid fa-arrow-left"></i> BACK TO SEARCH
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+   
+        <p style="color: dimgrey; ">&copy; BOCISearch 2024</p>
+    <script src="scri.js"></script>
+    
+  </body>
+</html>

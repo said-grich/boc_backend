@@ -22,4 +22,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
     path('', include('documents_parser.urls')),
+    path('api/accounts/', include('accounts.urls')),
 ]
