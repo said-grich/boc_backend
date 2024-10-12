@@ -16,7 +16,7 @@ class ExtractedData(models.Model):
     location_of_tag = models.CharField(max_length=255)
     date_of_search = models.DateTimeField(auto_now_add=True)  
     search_author = models.CharField(max_length=255)  # Changed to CharField temporarily
-    # search_author = models.ForeignKey(User, on_delete=models.CASCADE)  # Link to User table
+    search_author = models.ForeignKey(CustomUser, on_delete=models.CASCADE)  # Link to User table
     match_type = models.CharField(max_length=10, choices=MATCH_TYPE_CHOICES)  # New field for match type
     other = models.CharField(max_length=255, blank=True)
     line_id = models.CharField(max_length=255, blank=True, null=True)
