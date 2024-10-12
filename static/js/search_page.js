@@ -64,14 +64,12 @@ const fileCompletedStatus = document.querySelector(".file-completed-status");
 
 let totalFiles = 0;
 let completedFiles = 0;
-
+let filesToUpload = [];
 
 const createFileItemHTML = (file, uniqueIdentifier) => {
     const { name, size, type } = file;
     const extension = name.split(".").pop();
     const formattedFileSize = size >= 1024 * 1024 ? `${(size / (1024 * 1024)).toFixed(2)} MB` : `${(size / 1024).toFixed(2)} KB`;
-
-
 
     return `<li class="file-item" id="file-item-${uniqueIdentifier}">
                 <div class="file-extension">${extension.toUpperCase()}</div>
@@ -80,104 +78,74 @@ const createFileItemHTML = (file, uniqueIdentifier) => {
                         <div class="file-details">
                             <h5 class="file-name">${name}</h5>
                             <div class="file-info">
-                                <small class="file-size">0 MB / ${formattedFileSize}</small>
-                                <small class="file-divider">•</small>
+                                <small class="file-divider">${formattedFileSize}</small>
                             </div>
                         </div>
                         <button class="cancel-button" onclick="removeFile(${uniqueIdentifier})">
                             <i class="fa fa-times"></i> 
                         </button>
                     </div>
-                    <div class="file-progress-bar">
-                        <div class="file-progress"></div>
-                    </div>
+                   
                 </div>
-            </li>`;
+            </li>`
 }
+
+
+
 
 const removeFile = (uniqueIdentifier) => {
     const fileItem = document.getElementById(`file-item-${uniqueIdentifier}`);
     if (fileItem) {
+
         fileItem.remove();
-        
         // Find the index of the file to remove
         const fileIndex = filesToUpload.findIndex(file => file.uniqueIdentifier === uniqueIdentifier);
+        console.log(fileIndex)
+
         if (fileIndex > -1) {
             filesToUpload.splice(fileIndex, 1);  // Remove the file from the array
         }
 
-        totalFiles--;
+        const fileInput = document.querySelector('.file-browse-input');
+        const files = fileInput.files;
+
+        // Create a new DataTransfer object to hold the new FileList
+        const dataTransfer = new DataTransfer();
+
+        // Loop through the FileList and add files except the one to remove
+        Array.from(files).forEach((file, index) => {
+            // You need to match the uniqueIdentifier with the index or some other file property
+            if (index !== fileIndex) {
+                dataTransfer.items.add(file); // Keep this file
+            }
+        });
+
+        // Assign the new FileList to the input
+        fileInput.files = dataTransfer.files;
+
+        // Update total files and UI
+        totalFiles = fileInput.files.length;
         fileCompletedStatus.innerText = `${totalFiles} files`;
     }
 };
 
-const handleFileUploading = (file, uniqueIdentifier) => {
-    const xhr = new XMLHttpRequest();
-    const formData = new FormData();
-    formData.append("files", file);
-
-    // Adding progress event listener to the ajax request
-    xhr.upload.addEventListener("progress", (e) => {
-        const fileProgress = document.querySelector(`#file-item-${uniqueIdentifier} .file-progress`);
-        const fileSize = document.querySelector(`#file-item-${uniqueIdentifier} .file-size`);
-        const statusElement = document.getElementById(`file-status-${uniqueIdentifier}`);
-
-        const formattedFileSize = file.size >= 1024 * 1024 ? `${(e.loaded / (1024 * 1024)).toFixed(2)} MB / ${(e.total / (1024 * 1024)).toFixed(2)} MB` : `${(e.loaded / 1024).toFixed(2)} KB / ${(e.total / 1024).toFixed(2)} KB`;
-
-        const progress = Math.round((e.loaded / e.total) * 100);
-        fileProgress.style.width = `${progress}%`;
-        fileSize.innerText = formattedFileSize;
-        statusElement.innerText = "Uploading...";
-    });
-
-    xhr.open("POST", "/api/search/", true);
-    xhr.setRequestHeader("X-CSRFToken", csrfToken);
-
-    // Update the status to uploading
-    xhr.addEventListener("loadstart", () => {
-        const statusElement = document.getElementById(`file-status-${uniqueIdentifier}`);
-        statusElement.innerText = "Uploading...";
-    });
-
-    // Update the status on success
-    xhr.addEventListener("load", () => {
-        if (xhr.status === 200) {
-            const statusElement = document.getElementById(`file-status-${uniqueIdentifier}`);
-            statusElement.innerText = "Completed";
-            statusElement.style.color = "#00B125";
-            document.querySelector(`#file-item-${uniqueIdentifier} .cancel-button`).remove();
-        } else {
-            const statusElement = document.getElementById(`file-status-${uniqueIdentifier}`);
-            statusElement.innerText = "Error";
-            statusElement.style.color = "#E3413F";
-        }
-    });
-
-    // Handle error
-    xhr.addEventListener("error", () => {
-        const statusElement = document.getElementById(`file-status-${uniqueIdentifier}`);
-        statusElement.innerText = "Error";
-        statusElement.style.color = "#E3413F";
-        alert("An error occurred during the file upload!");
-    });
-
-    xhr.send(formData);
-}
-
-
 const handleSelectedFiles = ([...files]) => {
+
+    console.log(files)
+
     if (files.length === 0) return;
+
     totalFiles += files.length;
 
     files.forEach((file, index) => {
         const uniqueIdentifier = Date.now() + index;
+        filesToUpload.push({ file, uniqueIdentifier });
         const fileItemHTML = createFileItemHTML(file, uniqueIdentifier);
         if (fileItemHTML) {
             fileList.insertAdjacentHTML("afterbegin", fileItemHTML);
-            handleFileUploading(file, uniqueIdentifier);
+
         }
     });
-
     fileCompletedStatus.innerText = `${totalFiles} files`;
 }
 

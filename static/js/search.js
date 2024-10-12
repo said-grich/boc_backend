@@ -1,26 +1,38 @@
-$('#submit-button').click(function(event) {
+$('#submit-button').click(function (event) {
   event.preventDefault();  // Prevent the default form submission
 
   // Collect all tag input values
   const tags = [];
-  $('#search-tags li').each(function() {
+  $('#search-tags li').each(function () {
     tags.push($(this).text().trim());  // Get the text content of each li element
   });
 
   const files = $('.file-browse-input')[0].files;  // Capture files
+
   const formData = new FormData();
 
+  console.log(filesToUpload)
 
 
-  for (let i = 0; i < files.length; i++) {
-    formData.append('files', files[i]);
-  }
+  filesToUpload.forEach((fileObject) => {
+    formData.append('files', fileObject.file);  // Append the file itself
+  });
+
   for (let i = 0; i < tags.length; i++) {
     formData.append('tag_names', tags[i]);
   }
-  console.log(formData)
 
-  // Show the loading spinner
+  for (var pair of formData.entries()) {
+    if (pair[1] instanceof File) {
+        console.log(pair[0] + ':');
+        console.log(' - File name: ' + pair[1].name);
+        console.log(' - File size: ' + pair[1].size + ' bytes');
+        console.log(' - File type: ' + pair[1].type);
+    } else {
+        console.log(pair[0] + ': ' + pair[1]);
+    }
+}
+
   $('#loading-spinner').show();
 
   $.ajax({
@@ -32,13 +44,13 @@ $('#submit-button').click(function(event) {
     headers: {
       'X-CSRFToken': csrfToken  // The CSRF token
     },
-    xhr: function() {
+    xhr: function () {
       const xhr = new window.XMLHttpRequest();
       xhr.responseType = 'blob';  // Expect a blob response (for file download)
       return xhr;
     },
 
-    success: function(data) {
+    success: function (data) {
       $('#loading-spinner').hide();  // Hide the spinner
 
       // Download the returned file
@@ -51,10 +63,12 @@ $('#submit-button').click(function(event) {
       a.remove();
       window.URL.revokeObjectURL(url);
     },
-    error: function(error) {
+    error: function (error) {
       console.error('Error:', error);
       $('#loading-spinner').hide();  // Hide the spinner
       $('#results').html("An error occurred.");
     }
   });
+
+
 });
