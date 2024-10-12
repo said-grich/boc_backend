@@ -8,7 +8,8 @@ import pytz
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth import get_user_model
 from documents_parser.models import ExtractedData
 from .serializers import SearchSerializer
 from .services import calculate_summary_statistics, exportAsWord_using_Search_id, format_results_by_file, process_uploaded_file, save_results_to_db, append_dicts, serialize_formatted_results
@@ -20,7 +21,9 @@ from django.forms.models import model_to_dict
 
 from .services import export_search_results_to_word
 
+CustomUser = get_user_model()
 class SearchView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = SearchSerializer(data=request.data)
         if serializer.is_valid():
@@ -29,7 +32,7 @@ class SearchView(APIView):
             print(f"======================={type(tag_names)} ,, ----{tag_names}")
             
             # tag_names = json.loads(tag_names)
-            user = "Test_User"  # Replace with actual user when integrating auth
+            user = request.user  # Replace with actual user when integrating auth
             temp_dir = None
             
             results_by_tag_exact = {tag: [] for tag in tag_names}
