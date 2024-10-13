@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 import uuid
 
+from accounts.models import CustomUser
+
 class ExtractedData(models.Model):
     MATCH_TYPE_CHOICES = [
         ('exact', 'Exact Match'),

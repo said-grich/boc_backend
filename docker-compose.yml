@@ -19,6 +19,5 @@ services:
       POSTGRES_DB: boc_db   
       POSTGRES_USER: boc_user
       POSTGRES_PASSWORD: boc2024
-
 volumes:
   postgres_data:

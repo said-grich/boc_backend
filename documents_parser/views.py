@@ -22,8 +22,9 @@ from django.forms.models import model_to_dict
 from .services import export_search_results_to_word
 
 CustomUser = get_user_model()
+
 class SearchView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = SearchSerializer(data=request.data)
         if serializer.is_valid():
@@ -32,7 +33,7 @@ class SearchView(APIView):
             print(f"======================={type(tag_names)} ,, ----{tag_names}")
             
             # tag_names = json.loads(tag_names)
-            user = request.user  # Replace with actual user when integrating auth
+            user = request.user 
             temp_dir = None
             
             results_by_tag_exact = {tag: [] for tag in tag_names}
