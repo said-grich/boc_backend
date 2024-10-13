@@ -171,3 +171,23 @@ fileUploadBox.addEventListener("dragleave", (e) => {
 fileBrowseInput.addEventListener("change", (e) => handleSelectedFiles(e.target.files));
 fileBrowseButton.addEventListener("click", () => fileBrowseInput.click());
 
+
+const removeAllFiles = () => {
+    // Remove all file items from the file list in the UI
+    const fileItems = document.querySelectorAll('.file-item');
+    fileItems.forEach(fileItem => {
+        fileItem.remove();
+    });
+
+    // Clear the filesToUpload array
+    filesToUpload.length = 0;  // Reset the array
+
+    // Get the file input element and reset its FileList
+    const fileInput = document.querySelector('.file-browse-input');
+    const dataTransfer = new DataTransfer();
+    fileInput.files = dataTransfer.files;  // Clear the file input
+
+    // Update total files and UI
+    totalFiles = 0;
+    fileCompletedStatus.innerText = `${totalFiles} files`;  // Update the UI to show 0 files
+};

@@ -11,11 +11,13 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-#model 
+# model
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
 # Quick-start development settings - unsuitable for production
@@ -33,37 +35,34 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    # 'django.contrib.admin',
     'django.contrib.auth',
+
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'documents_parser',
     'accounts',
+    'documents_parser',
+    'corsheaders',
+    'rest_framework_simplejwt.token_blacklist',
+
 
 ]
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-}
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'bocisearch@gmail.com'  #  Gmail address
+EMAIL_HOST_USER = 'bocisearch@gmail.com'  # Gmail address
 EMAIL_HOST_PASSWORD = 'faop vjla ufhb hdef'
 DEFAULT_FROM_EMAIL = 'bocisearch@gmail.com'
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
-
-#DRF
+# DRF
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -81,21 +80,25 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
+
+# CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'boc_backEnd.urls'
 
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    BASE_DIR / "static",  # This will include static files located in the 'static/' directory at the project root
+    # This will include static files located in the 'static/' directory at the project root
+    BASE_DIR / "static",
 ]
 
 # Templates directory
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],  
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -118,7 +121,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'boc_db',  # should match POSTGRES_DB
         'USER': 'boc_user',       # should match POSTGRES_USER
-        'PASSWORD': 'boc2024', # should match POSTGRES_PASSWORD
+        'PASSWORD': 'boc2024',  # should match POSTGRES_PASSWORD
         'HOST': 'db',           # Docker service name for the PostgreSQL container
         'PORT': '5432',         # Default PostgreSQL port
     }
@@ -161,7 +164,23 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Media
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+SIMPLE_JWT = {
+    # Access token expires after 5 minutes
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
+    # Refresh token expires after 7 days
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+}

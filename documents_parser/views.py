@@ -1,5 +1,3 @@
-
-
 from datetime import datetime
 import json
 from django.http import HttpResponse
@@ -65,7 +63,7 @@ class SearchView(APIView):
                 search_id =save_results_to_db(results_by_tag_exact,results_by_tag_partial ,uploaded_file.name, file_type, user)
                 
                 
-                word_document,user_name,datetime_string_file=exportAsWord_using_Search_id(search_id)
+                word_document,user_name,datetime_string_file=exportAsWord_using_Search_id(search_id,user.username)
                 # Create a response with the Word document as an attachment
                 response = HttpResponse(word_document, content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
                 response['Content-Disposition'] = f'attachment; filename="search_result_{search_id}_{user_name}_{datetime_string_file}".docx'

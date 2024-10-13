@@ -41,6 +41,9 @@ $('#submit-button').click(function (event) {
     data: formData,
     processData: false,
     contentType: false,
+    beforeSend: function(xhr) {
+      setAuthHeaders(xhr); // Inject JWT token into the request headers
+    },
     headers: {
       'X-CSRFToken': csrfToken  // The CSRF token
     },

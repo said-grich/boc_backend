@@ -82,11 +82,7 @@ def process_uploaded_file(file_path, uploaded_file_name, tag_names, user):
 def save_results_to_db(results,results_partial, file_name, file_type, user):
 
     search_id = uuid.uuid4()
-    
-    print("UUID",search_id)
 
-    # saved_results_exact = [] 
-    # saved_results_partial = []
 
     for tag, result_list in results.items():
         for result in result_list:
@@ -196,7 +192,7 @@ def export_search_results_to_word(serialized_formatted_results, search_id, searc
             row_cells[3].text = clean_text(result['block_record'])
             row_cells[4].text = clean_text(result['location_of_tag'])
             row_cells[5].text = datetime.strptime(result['date_of_search'],"%Y-%m-%dT%H:%M:%S.%fZ").strftime("%B %d, %Y %H:%M")
-            row_cells[6].text = clean_text(result['search_author'])
+            row_cells[6].text = clean_text(user_name)
             row_cells[7].text = clean_text(result['other'])
             # Highlight the tag in the 'Block/Record' cell
             highlight_text(row_cells[3].paragraphs[0], result['tag_searched'],WD_COLOR_INDEX.YELLOW)
@@ -217,7 +213,7 @@ def export_search_results_to_word(serialized_formatted_results, search_id, searc
             row_cells[3].text = clean_text(result['block_record'])
             row_cells[4].text = clean_text(result['location_of_tag'])
             row_cells[5].text = datetime.strptime(result['date_of_search'],"%Y-%m-%dT%H:%M:%S.%fZ").strftime("%B %d, %Y %H:%M")
-            row_cells[6].text = clean_text(result['search_author'])
+            row_cells[6].text = clean_text(user_name)
             row_cells[7].text = clean_text(result['other'])
             
             # Highlight the tag in the 'Block/Record' cell
@@ -359,7 +355,7 @@ def clean_text(text):
     return cleaned_text
 
 
-def exportAsWord_using_Search_id(search_id):
+def exportAsWord_using_Search_id(search_id,user_name):
             search_results = format_results_by_file(search_id)
             serialized_results = serialize_formatted_results(search_results)
             datetime_string = next(iter(serialized_results.items()))[1]["exact_matches"][0]["date_of_search"]
@@ -369,9 +365,6 @@ def exportAsWord_using_Search_id(search_id):
 
             # Convert to a timezone-aware datetime object in UTC
             datetime_obj = datetime_obj.replace(tzinfo=pytz.UTC)
-
-
-            user_name = next(iter(serialized_results.items()))[1]["exact_matches"][0]["search_author"] 
 
             word_document = export_search_results_to_word(serialized_results, search_id, datetime_obj, user_name)
             return word_document,user_name,datetime_string_file

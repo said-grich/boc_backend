@@ -1,0 +1,19 @@
+{% load static %}
+
+<p style="color: dimgrey;">&copy; BOCISearch 2024</p>
+    
+<script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/toastr.min.js' %}"></script>
+
+<script src="{% static 'js/authGuard.js' %}"></script>
+<script src="{% static 'js/script.js' %}"></script>
+<script src="{% static 'js/auth_service.js' %}"></script>
+
+
+    <!-- Pass the search URL and CSRF token to JavaScript -->
+<script>
+      const searchUrl = "{% url 'search' %}";
+      const csrfToken = "{{ csrf_token }}";
+</script>
+<script src="{% static 'js/translate.js' %}"></script>
