@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
 
 *{
@@ -26,6 +27,28 @@ body{
     padding: 0 20px;
     top: -1px;
   }
+  .navbar {
+    background: transparent;
+    display: flex;
+    top: -1px;
+    padding: 1rem 2rem;
+    justify-content: space-between;
+    align-content: center;
+    .language-selector {
+      background: transparent;
+      border: none;
+      color: #fff;
+      outline: none;
+      option {
+        background: #ffffff;
+        color: #000000;
+      }
+    }
+  }
+
+  
+ 
+ 
   
   .nav {
     max-width: 1100px;
@@ -53,6 +76,7 @@ body{
   .nav_link:hover {
     color: #d9d9d9;
   }
+ 
   .button {
     padding: 6px 24px;
     border: 2px solid black;
@@ -497,3 +521,104 @@ body{
 }
 
 }
+
+/* Style pour le select dropdown */
+#languageSelect {
+  width: 107px;  /* Largeur du menu déroulant */
+  padding: 7px;  /* Espace intérieur pour un meilleur confort */
+  font-size: 16px;  /* Taille de police lisible */
+  font-family: Arial, sans-serif;  /* Police agréable à lire */
+  color: #333;  /* Couleur de texte foncée */
+  background-color: transparent;  /* Couleur de fond légère */
+  border: 1px solid #fff;  /* Bordure légère et neutre */
+  border-radius: 4px;  /* Coins légèrement arrondis */
+  cursor: pointer;  /* Curseur en pointeur pour indiquer l'interactivité */
+  appearance: none;  /* Supprime le style par défaut du navigateur */
+  -webkit-appearance: none;  /* Compatible pour Safari */
+  -moz-appearance: none;  /* Compatible pour Firefox */
+  text-align: center;
+}
+
+/* Style pour les options à l'intérieur du dropdown */
+#languageSelect option {
+  font-size: 16px;  /* Taille de police lisible */
+  padding: 10px;  /* Espacement entre le texte et les bords */
+  background-color: transparent;  /* Fond blanc pour les options */
+  color: #333;  /* Couleur du texte */
+}
+
+/* Ajouter une flèche personnalisée au dropdown */
+#languageSelect {
+  background-position: right 10px center;  /* Place la flèche sur la droite */
+  background-repeat: no-repeat;  /* Empêche la répétition de l'image */
+}
+
+/* Pour s'assurer que la flèche ne couvre pas le texte */
+#languageSelect {
+  padding-right: 10px;  /* Ajoute un espace pour le texte afin d'éviter la superposition avec la flèche */
+
+}
+
+/* Changer la couleur de fond au survol */
+#languageSelect:hover {
+  background-color: #ffffff;  /* Couleur de fond plus foncée au survol */
+}
+
+/* Style pour l'état sélectionné */
+#languageSelect:focus {
+  border-color: #007BFF;  /* Couleur de bordure bleue quand l'élément est en focus */
+  outline: none;  /* Supprime la bordure par défaut */
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);  /* Ajoute un léger halo bleu */
+}
+
+/* Style pour le lien "Forgot your password" */
+
+.forgot-password {
+  color: #007BFF;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
+
+/* Card cachée par défaut */
+.reset-card {
+  width: 300px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: #f9f9f9;
+  display: none;
+}
+
+.reset-card h2 {
+  text-align: center;
+}
+
+.reset-card input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.reset-card button {
+  width: 100%;
+  padding: 10px;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.reset-card button:hover {
+  background-color: #0056b3;
+}
+
+/* choose langue */

@@ -42,14 +42,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'documents_parser',
     'accounts',
+    'corsheaders',
 
 ]
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-}
+
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -59,7 +56,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'bocisearch@gmail.com'  #  Gmail address
 EMAIL_HOST_PASSWORD = 'faop vjla ufhb hdef'
 DEFAULT_FROM_EMAIL = 'bocisearch@gmail.com'
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
 
 
 
@@ -81,7 +78,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
+
+# CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'boc_backEnd.urls'
 
@@ -160,6 +160,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+#Media 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

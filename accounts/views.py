@@ -1,4 +1,4 @@
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, viewsets
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import CustomUser
 from rest_framework.response import Response
@@ -10,6 +10,11 @@ from rest_framework import status
 from django.conf import settings
 from .serializers import RegistrationSerializer, LoginSerializer, ProfileSerializer, PasswordResetSerializer, SetNewPasswordSerializer
 
+from rest_framework import generics
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import status
+
 class RegistrationView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = RegistrationSerializer
@@ -20,36 +25,42 @@ class LoginView(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        
         email = serializer.validated_data['email']
         password = serializer.validated_data['password']
-        user = CustomUser.objects.get(email=email)
 
         try:
+            # Check if user exists with the given email
             user = CustomUser.objects.get(email=email)
         except CustomUser.DoesNotExist:
-            return Response({'detail': 'Invalid credentials'}, status=400)
+            return Response({'detail': 'Invalid credentials: email not found'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if user.check_password(password):
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-                'username': user.username,
-                'email': user.email,
-            })
-        return Response({'detail': 'Invalid credentials'}, status=400)
+        # Authenticate the user (check password)
+        if not user.check_password(password):
+            return Response({'detail': 'Invalid credentials: wrong password'}, status=status.HTTP_400_BAD_REQUEST)
 
-class ProfileView(generics.RetrieveUpdateAPIView):
-    queryset = CustomUser.objects.all()
+        # If credentials are correct, generate JWT tokens
+        refresh = RefreshToken.for_user(user)
+
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'username': user.username,
+            'email': user.email,
+        }, status=status.HTTP_200_OK)
+
+      
+
+class ProfileViewSet(viewsets.ModelViewSet):
     serializer_class = ProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_object(self):
-        return self.request.user
+    def get_queryset(self):
+        return CustomUser.objects.filter(id=self.request.user.id)
 
-""" 
-i will add update profile 
-"""        
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+      
 class PasswordResetView(APIView):
     def post(self, request):
         serializer = PasswordResetSerializer(data=request.data)
