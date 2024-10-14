@@ -53,18 +53,33 @@ class LoginView(generics.GenericAPIView):
             'email': user.email,
         }, status=status.HTTP_200_OK)
 
-      
-
 class ProfileViewSet(viewsets.ModelViewSet):
     serializer_class = ProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
+    http_method_names = ['get', 'put', 'patch']  # Allow GET for fetching profile, PUT/PATCH for updates
 
     def get_queryset(self):
+        # Return the current logged-in user's profile only
         return CustomUser.objects.filter(id=self.request.user.id)
 
+    def retrieve(self, request, *args, **kwargs):
+        # Get the current user's profile information (username, email, profile picture)
+        serializer = self.get_serializer(self.request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def update(self, request, *args, **kwargs):
-        return super().update(request, *args, **kwargs)
-      
+        # Update the profile (username, email, password, confirm password)
+        partial = kwargs.pop('partial', False)  # Check if it's a partial update
+        instance = self.request.user
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
+    def partial_update(self, request, *args, **kwargs):
+        # This method will handle PATCH requests specifically
+        return self.update(request, *args, **kwargs)  # Call the update method
+         
 class PasswordResetView(APIView):
     def post(self, request):
         serializer = PasswordResetSerializer(data=request.data)

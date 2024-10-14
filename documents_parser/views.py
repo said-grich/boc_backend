@@ -8,8 +8,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
-from documents_parser.models import ExtractedData
-from .serializers import SearchSerializer
+from documents_parser.models import ExtractedData, SearchHistory
+from .serializers import SearchSerializer, HistorySerializer
 from .services import calculate_summary_statistics, exportAsWord_using_Search_id, format_results_by_file, process_uploaded_file, save_results_to_db, append_dicts, serialize_formatted_results
 import tempfile
 import os
@@ -20,6 +20,7 @@ from django.forms.models import model_to_dict
 from .services import export_search_results_to_word
 
 CustomUser = get_user_model()
+
 
 class SearchView(APIView):
     # permission_classes = [IsAuthenticated]
@@ -77,8 +78,7 @@ class SearchView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-
+    """    """  
 # class SearchView(APIView):
 #     def post(self, request):
 #         serializer = SearchSerializer(data=request.data)

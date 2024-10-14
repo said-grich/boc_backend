@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 import uuid
 from accounts.models import CustomUser
 
-from accounts.models import CustomUser
 
 class ExtractedData(models.Model):
     MATCH_TYPE_CHOICES = [
@@ -32,3 +31,13 @@ class ExtractedData(models.Model):
             # Generate a unique line ID (e.g., UUID or any unique identifier)
             self.line_id = f"{self.pk}_{self.source_file_name}_{self.tag_searched[:10]}"
         super(ExtractedData, self).save(*args, **kwargs)
+
+CustomUser 
+class SearchHistory(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    document_name = models.CharField(max_length=255)
+    timestamp = models.DateTimeField(auto_now_add=True)  # Automatically set to now when created
+    month_year = models.DateField(auto_now_add=True)  # Store the month and year of the search
+
+    def __str__(self):
+        return f"{self.user.username} - {self.document_name} at {self.timestamp}"       

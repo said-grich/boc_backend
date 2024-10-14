@@ -55,16 +55,18 @@
     <div class="left-section" style="width: 22%; background-color: #f0f0f0; height: 510px; padding: 20px; border-radius: 8px; text-align: center;">
         <!-- Image de profil -->
         <div class="profile-pic" style="position: relative; margin-bottom: 15px;">
-          <img src="https://via.placeholder.com/100" alt="Profile Picture" style="border-radius: 50%; width: 100px; height: 100px;">
+          <img id="profileImage" src="https://via.placeholder.com/100" alt="Profile Picture" style="border-radius: 50%; width: 100px; height: 100px;">
           <!-- Bouton de modification d'image -->
-          <button style="position: absolute; bottom: 0; right: 0; background-color: #007BFF; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; font-size: 12px; cursor: pointer;">✎</button>
+          <input type="file" id="imageUpload" style="display: none;" accept="image/*"onchange="previewImage(event)">
+          <button onclick="document.getElementById('imageUpload').click()" style="position: absolute; bottom: 0; right: 0; background-color: #007BFF; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; font-size: 12px; cursor: pointer;">✎</button>
         </div>
         
         <!-- Nom de l'utilisateur -->
-        <p><strong>John Doe</strong></p>
+        <button id="savePictureButton" style="background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px; margin-top: 10px;">Upload</button>
+        <p><strong id="username"></strong></p>
         
         <!-- Email de l'utilisateur -->
-        <p style="color: gray;">johndoe@example.com</p>
+        <p id="email" style="color: gray;"></p>
         
        <!-- Statistiques et liens rapides avant le bouton Logout -->
 
@@ -84,7 +86,7 @@
 <br><br><br>
         <!-- Bouton de déconnexion -->
         <button style="background-color: #FF4B4B; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px;">
-            <i class="fa-solid fa-right-from-bracket"></i>&nbsp;LOGOUT
+            <i onclick="logout()" class="fa-solid fa-right-from-bracket"></i>&nbsp;LOGOUT
         </button>
       </div>
   
@@ -96,23 +98,24 @@
         
         <!-- Formulaire d'édition -->
         <div class="content">
+          
           <p>Change your Username</p>
-          <ul><input type="text" placeholder="username"></ul>
+          <ul><input type="text" placeholder="username" id="usernameInput"></ul>
   
           <p>Change your Email</p>
-          <ul><input type="text" placeholder="Email"></ul>
+          <ul><input type="text" placeholder="Email" id="emailInput"></ul>
   
           <p>New Password</p>
-          <ul><input type="password" placeholder="New Password"></ul>
+          <ul><input type="password" placeholder="New Password" id="passwordInput"></ul>
   
           <p>Confirm Password</p>
-          <ul><input type="password" placeholder="Confirm Password"></ul>
+          <ul><input type="password" placeholder="Confirm Password" id="confirmPasswordInput"></ul>
         </div>
 
         <!-- Boutons -->
         <div class="detail" style="margin-top: 20px;">
            
-          <button style="background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px;">SAVE</button>
+          <button type="submit" style="background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px;">SAVE</button>
           <button style="background-color: #cacaca; color: black; padding: 10px 20px; border: none; border-radius: 5px; margin-left: 10px;">
             <i class="fa-solid fa-arrow-left"></i> BACK TO SEARCH
           </button>
@@ -124,6 +127,5 @@
    
         <p style="color: dimgrey; ">&copy; BOCISearch 2024</p>
     <script src="scri.js"></script>
-    <script src="translate.js"></script>
-  </body>
+    <script src="{% static 'js/translations.js' %}"></script>  </body>
 </html>
