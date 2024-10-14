@@ -1,10 +1,6 @@
 from rest_framework import serializers
-from .models import ExtractedData, SearchHistory
+from .models import ExtractedData
 
-class HistorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SearchHistory
-        fields = ['id', 'document_name', 'timestamp', 'month_year']
 class GitHubSearchSerializer(serializers.Serializer):
     github_url = serializers.URLField(label='GitHub Repository URL', required=False)
     query = serializers.CharField(label='Search Query', required=True)

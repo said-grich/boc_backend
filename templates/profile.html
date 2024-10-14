@@ -1,15 +1,6 @@
-<!DOCTYPE html>
+{% load static %}
+{% include 'includes/head.html' %}
 
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title> EditProfile</title>
-    <link rel="stylesheet" href="sty.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Unicons CDN Link for Icons -->
-    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/thinline.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-  </head>
   <body>
     <header class="header">
       <nav class="nav">
@@ -63,12 +54,11 @@
         
         <!-- Nom de l'utilisateur -->
         <button id="savePictureButton" style="background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px; margin-top: 10px;">Upload</button>
+
         <p><strong id="username"></strong></p>
         
-        <!-- Email de l'utilisateur -->
         <p id="email" style="color: gray;"></p>
         
-       <!-- Statistiques et liens rapides avant le bouton Logout -->
 
   <br><br>
    <!-- Menu -->
@@ -124,8 +114,8 @@
     </div>
   </div>
   
-   
-        <p style="color: dimgrey; ">&copy; BOCISearch 2024</p>
-    <script src="scri.js"></script>
-    <script src="{% static 'js/translations.js' %}"></script>  </body>
+    {% include 'includes/footer.html' %}
+    <script src="{% static 'js/profile.js' %}"></script>
+
+         </body>
 </html>

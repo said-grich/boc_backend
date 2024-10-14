@@ -16,7 +16,7 @@
           </button>
     
           <div class="dropdown-content" id="myDropdown">
-            <a href="updateprofile.html">
+            <a href="{% url 'profile' %}">
               <!-- <span class="material-symbols-outlined"> cottage </span> -->
               <i data-i18n="profile" class="fa-solid fa-user"></i> Profile
             </a>
@@ -77,7 +77,8 @@
 
     {% include 'includes/footer.html' %}
     <script src="{% static 'js/search.js' %}"></script>
-    <script src="{% static 'js/translations.js' %}"></script>
+    <script src="{% static 'js/search_page.js' %}"></script>
+
     
 
   </body>

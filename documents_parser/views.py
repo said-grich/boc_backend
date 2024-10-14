@@ -8,8 +8,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
-from documents_parser.models import ExtractedData, SearchHistory
-from .serializers import SearchSerializer, HistorySerializer
+from documents_parser.models import ExtractedData
+from .serializers import SearchSerializer
 from .services import calculate_summary_statistics, exportAsWord_using_Search_id, format_results_by_file, process_uploaded_file, save_results_to_db, append_dicts, serialize_formatted_results
 import tempfile
 import os
@@ -17,15 +17,17 @@ import shutil
 import gc
 from django.forms.models import model_to_dict
 
+
 from .services import export_search_results_to_word
 
 CustomUser = get_user_model()
 
 
 class SearchView(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = SearchSerializer(data=request.data)
+        
         if serializer.is_valid():
             uploaded_files = request.FILES.getlist('files')
             tag_names = serializer.validated_data.get('tag_names')
@@ -33,6 +35,7 @@ class SearchView(APIView):
             
             # tag_names = json.loads(tag_names)
             user = request.user 
+            print("===================>",user)
             temp_dir = None
             
             results_by_tag_exact = {tag: [] for tag in tag_names}
@@ -143,6 +146,8 @@ class ExportSearchResultsView(APIView):
 
         # except Exception as e:
         #     return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 
 
 

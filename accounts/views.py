@@ -1,3 +1,4 @@
+from django.shortcuts import render
 from rest_framework import generics, permissions, viewsets
 from accounts.serializers import PasswordResetSerializer, RegistrationSerializer, LoginSerializer, ProfileSerializer, SetNewPasswordSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -53,6 +54,11 @@ class LoginView(generics.GenericAPIView):
             'email': user.email,
         }, status=status.HTTP_200_OK)
 
+
+
+def search_page(request):
+    return render(request, 'profile.html')
+
 class ProfileViewSet(viewsets.ModelViewSet):
     serializer_class = ProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -79,6 +85,9 @@ class ProfileViewSet(viewsets.ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         # This method will handle PATCH requests specifically
         return self.update(request, *args, **kwargs)  # Call the update method
+         
+         
+         
          
 class PasswordResetView(APIView):
     def post(self, request):
