@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime
 import json
 from django.http import HttpResponse
@@ -9,8 +10,8 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 from documents_parser.models import ExtractedData
-from .serializers import SearchSerializer
-from .services import calculate_summary_statistics, exportAsWord_using_Search_id, format_results_by_file, process_uploaded_file, save_results_to_db, append_dicts, serialize_formatted_results
+from .serializers import ExtractedDataSerializer, SearchSerializer
+from .services import calculate_summary_statistics, exportAsWord_using_Search_id, find_records, format_results_by_file, process_uploaded_file, save_results_to_db, append_dicts, serialize_formatted_results
 import tempfile
 import os
 import shutil
@@ -136,12 +137,11 @@ class ExportSearchResultsView(APIView):
     def get(self, request, search_id):
         # try:
             # Retrieve the search results from the database using the search_id
-
-            word_document,user_name,datetime_string_file=exportAsWord_using_Search_id(search_id)
+            user = request.user 
+            word_document,user_name,datetime_string_file=exportAsWord_using_Search_id(search_id,user.username)
             # Create a response with the Word document as an attachment
             response = HttpResponse(word_document, content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-            response['Content-Disposition'] = f'attachment; filename="search_result_{search_id}_{user_name}_{datetime_string_file}".docx'
-
+            response['Content-Disposition'] = f'attachment; filename="search_result_{user_name}_{datetime_string_file}".docx'
             return response
 
         # except Exception as e:
@@ -149,7 +149,59 @@ class ExportSearchResultsView(APIView):
 
 
 
+class ListExtractedDataView(APIView):
+    def get(self, request):
+        # Get the logged-in user
+        author = request.user
 
+        # Fetch records for the logged-in user
+        records = ExtractedData.objects.filter(search_author=author)
+
+        # Serializer is not used for grouping, but included if needed
+        serializer = ExtractedDataSerializer(records, many=True)
+
+        # Dictionary to group data by search_id and include date_of_search
+        grouped_data = defaultdict(lambda: {
+            "source_file_names": set(), 
+            "tags": set(),
+            "dates": set()
+        })
+
+        # Group records by search_id and collect document names, tags, and dates
+        for record in records:
+            grouped_data[record.search_id]["source_file_names"].add(record.source_file_name)
+            grouped_data[record.search_id]["tags"].add(record.tag_searched)
+            grouped_data[record.search_id]["dates"].add(record.date_of_search.strftime('%Y-%m-%d'))  # Format date as 'YYYY-MM-DD'
+
+        # Prepare the response structure
+        response_data = []
+        for search_id, values in grouped_data.items():
+            response_data.append({
+                "search_id": search_id,
+                "source_file_names": list(values["source_file_names"]),
+                "tags": list(values["tags"]),
+                "dates": list(values["dates"])  # Include the list of dates
+            })
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+
+class DeleteExtractedDataBySearchIDView(APIView):
+    def delete(self, request, search_id):
+        try:
+            # Fetch all records associated with the given search_id
+            records = ExtractedData.objects.filter(search_id=search_id)
+
+            if not records.exists():
+                return Response({"error": "No records found with the provided search_id"}, status=status.HTTP_404_NOT_FOUND)
+
+            # Delete the records
+            records.delete()
+            return Response({"message": f"Records with search_id {search_id} deleted successfully"}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 def History(request):
     return render(request, 'History.html')
 

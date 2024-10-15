@@ -150,7 +150,16 @@ def find_records(source_file_name=None, file_type=None, tag_searched=None, start
 
     if search_author:
         records = records.filter(search_author__icontains=search_author)
+    
+    formatted_results = defaultdict(lambda: {'exact_matches': [], 'partial_matches': []})
 
+    # Iterate through the results and group them
+    for result in records:
+        # Determine the match type and append the result to the correct category
+        if result.match_type == 'exact':
+            formatted_results[result.source_file_name]['exact_matches'].append(result)
+        elif result.match_type == 'partial':
+            formatted_results[result.source_file_name]['partial_matches'].append(result)
     return records
 
 
