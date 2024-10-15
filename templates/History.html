@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 
 <html lang="en" dir="ltr">
@@ -23,15 +24,15 @@
           </button>
     
           <div class="dropdown-content" id="myDropdown">
-            <a href="#">
+            <a href="{% url 'profile_page'%}">
               <!-- <span class="material-symbols-outlined"> cottage </span> -->
               <i class="fa-solid fa-user"></i> Profile
             </a>
-            <a href="#">
+            <a href="{% url 'History_page'%}">
               <!-- <span class="material-symbols-outlined">category</span> -->
               <i class="fa-solid fa-clock-rotate-left"></i> Historic
             </a>
-            <a href="#">
+            <a href="{% url 'logout' %}">
               <!-- <span class="material-symbols-outlined">donut_large</span> -->
               <i class="fa-solid fa-right-from-bracket"></i> Logout
             </a>      

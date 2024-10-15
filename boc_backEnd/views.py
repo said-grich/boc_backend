@@ -9,3 +9,4 @@ def profile_page(request):
     
     return render(request, 'profile.html')
 
+      

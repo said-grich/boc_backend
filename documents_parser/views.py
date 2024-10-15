@@ -149,9 +149,5 @@ class ExportSearchResultsView(APIView):
 
 
 
-
-def History(request):
-    return render(request, 'History.html')
-
 def search_page(request):
     return render(request, 'search-page.html')

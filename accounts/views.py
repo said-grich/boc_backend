@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import generics, permissions, viewsets
-from accounts.serializers import PasswordResetSerializer, RegistrationSerializer, LoginSerializer, ProfileSerializer, SetNewPasswordSerializer
+from accounts.serializers import PasswordResetSerializer, RegistrationSerializer, LoginSerializer, ProfileSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import CustomUser
 from rest_framework.response import Response
@@ -10,7 +10,6 @@ from django.core.mail import send_mail
 from rest_framework.views import APIView
 from rest_framework import status
 from django.conf import settings
-
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -85,36 +84,20 @@ class ProfileViewSet(viewsets.ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         # This method will handle PATCH requests specifically
         return self.update(request, *args, **kwargs)  # Call the update method
-         
-         
-         
-         
+def Forget_page(request):
+    return render(request, 'Forgotpassword.html')
+
 class PasswordResetView(APIView):
+    permission_classes = [AllowAny]  # Allow unauthenticated access for password reset
+
     def post(self, request):
         serializer = PasswordResetSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = CustomUser.objects.get(email=serializer.validated_data['email'])
-        token = PasswordResetTokenGenerator().make_token(user)
-        uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
-        reset_link = f"http://localhost:3000/reset-password/{uidb64}/{token}/"
         
-        send_mail(
-            subject='Password Reset Request',
-            message=f"Use the link below to reset your password:\n{reset_link}",
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[user.email],
-        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "A new password has been sent to your email."}, status=status.HTTP_200_OK)
         
-        return Response({"detail": "Password reset link sent to your email."}, status=status.HTTP_200_OK)
-
-class SetNewPasswordView(APIView):
-    def post(self, request):
-        serializer = SetNewPasswordSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        return Response({"detail": "Password reset successful."},  status=status.HTTP_200_OK)
-    
-    
-
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LogoutView(APIView):
