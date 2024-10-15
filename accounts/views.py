@@ -57,7 +57,7 @@ class LoginView(generics.GenericAPIView):
 
 
 def search_page(request):
-    return render(request, 'profile.html')
+    return render(request, 'search-page.html')
 
 class ProfileViewSet(viewsets.ModelViewSet):
     serializer_class = ProfileSerializer

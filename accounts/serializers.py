@@ -35,7 +35,11 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['username', 'email', 'profile_picture', 'new_password', 'confirm_password', 'current_password']
-
+        extra_kwargs = {
+        'email':{'required': False}, 
+        'profile_picture':{'required': False},
+        'username':{'required': False}}
+        
     def update(self, instance, validated_data):
         instance.username = validated_data.get('username', instance.username)
         instance.email = validated_data.get('email', instance.email)

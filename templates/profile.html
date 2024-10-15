@@ -12,18 +12,21 @@
           </button>
     
           <div class="dropdown-content" id="myDropdown">
-            <a href="#">
+            <a href="{% url 'profile_page'%}">
               <!-- <span class="material-symbols-outlined"> cottage </span> -->
               <i class="fa-solid fa-user"></i> Profile
             </a>
-            <a href="#">
+            <a href="{% url 'History_page'%}">
               <!-- <span class="material-symbols-outlined">category</span> -->
               <i class="fa-solid fa-clock-rotate-left"></i> Historic
             </a>
-            <a href="#">
+            <a href="{% url 'search_page' %}" class="btn-back-to-search">
+              <i class="fa-solid fa-arrow-left"></i> BACK TO SEARCH
+          </a>
               <!-- <span class="material-symbols-outlined">donut_large</span> -->
+               <a href="{% url 'logout' %}" >
               <i class="fa-solid fa-right-from-bracket"></i> Logout
-            </a>  
+            </a>
             </div>
           </div>
         </div>
@@ -107,8 +110,9 @@
            
           <button type="submit" style="background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px;">SAVE</button>
           <button style="background-color: #cacaca; color: black; padding: 10px 20px; border: none; border-radius: 5px; margin-left: 10px;">
-            <i class="fa-solid fa-arrow-left"></i> BACK TO SEARCH
-          </button>
+            <a href="{% url 'search_page' %}" class="btn-back-to-search">
+              <i class="fa-solid fa-arrow-left"></i> BACK TO SEARCH
+          </a>          </button>
         </div>
       </div>
     </div>
@@ -116,6 +120,7 @@
   
     {% include 'includes/footer.html' %}
     <script src="{% static 'js/profile.js' %}"></script>
+    <script src="{% static 'js/translate.js' %}"></script>
 
          </body>
 </html>

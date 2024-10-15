@@ -20,11 +20,11 @@
               <!-- <span class="material-symbols-outlined"> cottage </span> -->
               <i data-i18n="profile" class="fa-solid fa-user"></i> Profile
             </a>
-            <a href="History.html">
+            <a href="{% url 'History_page'%}">
               <!-- <span class="material-symbols-outlined">category</span> -->
               <i  data-i18n="historic" class="fa-solid fa-clock-rotate-left"></i> Historic
             </a>
-            <a onclick="logout()" href="#">
+            <a href="{% url 'logout' %}" >
               <!-- <span class="material-symbols-outlined">donut_large</span> -->
               <i data-i18n="logout"  class="fa-solid fa-right-from-bracket"></i> Logout
             </a>    
@@ -78,6 +78,7 @@
     {% include 'includes/footer.html' %}
     <script src="{% static 'js/search.js' %}"></script>
     <script src="{% static 'js/search_page.js' %}"></script>
+    <script src="{% static 'js/translate.js' %}"></script>
 
     
 
