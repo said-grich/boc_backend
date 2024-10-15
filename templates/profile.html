@@ -4,7 +4,7 @@
   <body>
     <header class="header">
       <nav class="nav">
-        <a href="#" class="nav_logo">BOCISearch</a>
+        <a href="{% url 'home' %}" class="nav_logo">BOCISearch</a>
         <div class="dropdown">
           <button class="dropdown-btn" onclick="toggleDropdown()">
             <i class="fa-solid fa-bars"></i>
@@ -16,16 +16,16 @@
               <!-- <span class="material-symbols-outlined"> cottage </span> -->
               <i class="fa-solid fa-user"></i> Profile
             </a>
-            <a href="#">
+            <a href="{% url 'history_page'%}">
               <!-- <span class="material-symbols-outlined">category</span> -->
               <i class="fa-solid fa-clock-rotate-left"></i> Historic
             </a>
             <a href="{% url 'search_page' %}" class="btn-back-to-search">
               <i class="fa-solid fa-arrow-left"></i> BACK TO SEARCH
-          </a>
+          </a >
               <!-- <span class="material-symbols-outlined">donut_large</span> -->
-               <a href="{% url 'logout' %}" >
-              <i class="fa-solid fa-right-from-bracket"></i> Logout
+               <a onclick="logout()" href="#" >
+              <i class="fa-solid fa-right-from-bracket" ></i> Logout
             </a>
             </div>
           </div>
@@ -34,7 +34,7 @@
     </header>
 <br><br>
 
-<div class="wrapper" style="width:1200px; height: 600px; display: flex; flex-direction: column;">
+<div class="wrapper" style="width:1200px;  display: flex; flex-direction: column;">
     <!-- Titre -->
     <div class="title" style="text-align: center; margin-bottom: 20px;">
       <h1 style="font-family: 'Montserrat', sans-serif;">
@@ -45,8 +45,7 @@
     <!-- Section principale avec flex pour aligner les deux parties -->
     <div class="main-content" style="display: flex; justify-content: space-between;">
   
-       <!-- Section gauche (Image de profil, infos utilisateur et déconnexion) -->
-    <div class="left-section" style="width: 22%; background-color: #f0f0f0; height: 510px; padding: 20px; border-radius: 8px; text-align: center;">
+    <div class="left-section" style="width: 22%; background-color: #f0f0f0; padding: 20px; border-radius: 8px; text-align: center;">
         <!-- Image de profil -->
         <div class="profile-pic" style="position: relative; margin-bottom: 15px;">
           <img id="profileImage" src="https://via.placeholder.com/100" alt="Profile Picture" style="border-radius: 50%; width: 100px; height: 100px;">
@@ -78,13 +77,13 @@
   </div>
 <br><br><br>
         <!-- Bouton de déconnexion -->
-        <button style="background-color: #FF4B4B; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px;">
-            <i onclick="logout()" class="fa-solid fa-right-from-bracket"></i>&nbsp;LOGOUT
+        <button onclick="logout()" style="background-color: #FF4B4B; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px;">
+            <i  class="fa-solid fa-right-from-bracket"></i>&nbsp;LOGOUT
         </button>
       </div>
   
       <!-- Section droite (Contenu principal) -->
-      <div class="right-section" style="width: 75%; background-color: #fff; height: 510px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); border-radius: 8px;">
+      <div class="right-section" style="width: 75%; background-color: #fff;  padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); border-radius: 8px;">
     <p style="margin-top: -1px;">
       <i class="fa-regular fa-pen-to-square"></i>&nbsp;Update your profile details below.
         <p>
@@ -119,8 +118,8 @@
   </div>
   
     {% include 'includes/footer.html' %}
+
     <script src="{% static 'js/profile.js' %}"></script>
     <script src="{% static 'js/translate.js' %}"></script>
-
-         </body>
+</body>
 </html>

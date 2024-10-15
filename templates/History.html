@@ -1,142 +1,39 @@
 {% load static %}
-<!DOCTYPE html>
+{% include 'includes/head.html' %}
+<link rel="stylesheet" href="{% static 'css/history_style.css' %}">
 
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title>Historysearch</title>
-    <link rel="stylesheet" href="history.css">
+<body>
+    {% include 'includes/header.html' %}
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Unicons CDN Link for Icons -->
-    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/thinline.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-  </head>
-  <body>
-    <header class="header">
-      <nav class="nav">
-        <a href="#" class="nav_logo">BOCISearch</a>
-        
-        <div class="dropdown">
-          <button class="dropdown-btn" onclick="toggleDropdown()">
-            <i class="fa-solid fa-bars"></i>
-            <!-- <span class="material-symbols-outlined expand-icon"> expand_more </span> -->
-          </button>
-    
-          <div class="dropdown-content" id="myDropdown">
-            <a href="{% url 'profile_page'%}">
-              <!-- <span class="material-symbols-outlined"> cottage </span> -->
-              <i class="fa-solid fa-user"></i> Profile
-            </a>
-            <a href="{% url 'History_page'%}">
-              <!-- <span class="material-symbols-outlined">category</span> -->
-              <i class="fa-solid fa-clock-rotate-left"></i> Historic
-            </a>
-            <a href="{% url 'logout' %}">
-              <!-- <span class="material-symbols-outlined">donut_large</span> -->
-              <i class="fa-solid fa-right-from-bracket"></i> Logout
-            </a>      
-            </div>
-          </div>
+    <div class="wrapper" style="width:1200px; height: 600px;">
+        <div class="title">
+            <h1 style="font-family: 'Montserrat', sans-serif;">HISTORY SEARCH</h1>
         </div>
-      </nav>
-    </header>
+        <br>
+        <!-- Section principale avec flex pour aligner les deux parties -->
+        <div class="main-content" style="display: flex; justify-content: space-between;">
 
-<br><br>
-    <div class="wrapper" style="width:1200px; height: 600px;" >
-      <div class="title">
-        <h1 style="font-family: 'Montserrat', sans-serif;">HISTORY SERACH</h1>
-      </div>
-      <br>
-       <!-- Section principale avec flex pour aligner les deux parties -->
-    <div class="main-content" style="display: flex; justify-content: space-between;">
-  
-        <!-- Section gauche (Image de profil, infos utilisateur et déconnexion) -->
-     <div class="left-section" style="width: 22%; background-color: #f0f0f0; height: 500px; padding: 20px; border-radius: 8px; text-align: center;">
-         <!-- Image de profil -->
-         <div class="profile-pic" style="position: relative; margin-bottom: 15px;">
-           <img src="https://via.placeholder.com/100" alt="Profile Picture" style="border-radius: 50%; width: 100px; height: 100px;">
-          
-         </div>
-         
-         <!-- Nom de l'utilisateur -->
-         <p><strong>John Doe</strong></p>
-         
-         <!-- Email de l'utilisateur -->
-         <p style="color: gray;">johndoe@example.com</p>
-         
-        <!-- Statistiques et liens rapides avant le bouton Logout -->
- 
-   <br><br>
-    <!-- Menu -->
-    <div class="menu" style="text-align: left; margin: 20px 0;">
-     <ul style="list-style-type: none; padding: 0;">
-       <li style="margin-bottom: 10px;">
-         <i class="fa-solid fa-gear"></i>&nbsp;<a href="#" style="color: #000000; text-decoration: none;">Profile Settings</a>
-       </li>
-       <li style="margin-bottom: 10px;">
-         <i class="fa-solid fa-clock-rotate-left"></i>&nbsp;<a href="#" style="color: #000000; text-decoration: none;">Search History</a>
-       </li>
-       <li style="margin-bottom: 10px;">
-        <i class="fa-solid fa-arrow-left"></i>&nbsp;<a href="#" style="color: #000000; text-decoration: none;">Back To Search</a>
-      </li>
-     </ul>
-   </div>
- <br>
-         <!-- Bouton de déconnexion -->
-         <button style="background-color: #FF4B4B; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px;">
-             <i class="fa-solid fa-right-from-bracket"></i>&nbsp;LOGOUT
-         </button>
-       </div>
-   
-       <!-- Section droite (Contenu principal) -->
-       <div class="right-section" style="width: 75%; background-color: #fff; height: 500px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); border-radius: 8px;">
-        <div class="container">
-            <ul class="responsive-table">
-              <li class="table-header">
-                <div class="col col-1">Time</div>
-                <div class="col col-2">Document Name</div>
-                <div class="col col-3">Date</div>
-                <div class="col col-4">Options</div>
-              </li>
-              <li class="table-row">
-                <div class="col col-1" data-label="Time">00:00</div>
-                <div class="col col-2" data-label="Document Name">xxxxxxxxxxxxxxxxxxxxxxxx</div>
-                <div class="col col-3" data-label="Date">xx/xx/2024</div>
-                <div class="col col-4" data-label="Options">
-                    <button style="background-color: #007BFF; color: white; padding: 5px 10px; border: none; border-radius: 5px;"><i class="fa-solid fa-download"></i></button>
-                    <button style="background-color: #FF4B4B; color: white; padding: 5px 10px; border: none; border-radius: 5px;"><i class="fa-solid fa-trash-can"></i></button>
+            <!-- Section droite (Contenu principal) -->
+            <div class="right-section"
+                style="width: 100%; background-color: #fff; height: 500px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); border-radius: 8px;">
+                <div class="container">
+                  <ul class="responsive-table">
+                    <li class="table-header">
+                        <div class="col col-2">Document Name</div>
+                        <div class="col col-3">Tags</div>
+                        <div class="col col-3">Date</div>
+                        <div class="col col-4">Options</div>
+                    </li>
+                    <div id="table-body">
+                    </div>
+                </ul>
+                
                 </div>
-              </li>
-              <li class="table-row">
-                <div class="col col-1" data-label="Time">00:00</div>
-                <div class="col col-2" data-label="Document Name">xxxxxxxxxxxxxxxxxxxxxxxx</div>
-                <div class="col col-3" data-label="Date">xx/xx/2024</div>
-                <div class="col col-4" data-label="Options"><button style="background-color: #007BFF; color: white; padding: 5px 10px; border: none; border-radius: 5px;"><i class="fa-solid fa-download"></i></button>
-                    <button style="background-color: #FF4B4B; color: white; padding: 5px 10px; border: none; border-radius: 5px;"><i class="fa-solid fa-trash-can"></i></button></div>
-              </li>
-              <li class="table-row">
-                <div class="col col-1" data-label="Time">00:00</div>
-                <div class="col col-2" data-label="Document Name">xxxxxxxxxxxxxxxxxxxxxxxx</div>
-                <div class="col col-3" data-label="Date">xx/xx/2024</div>
-                <div class="col col-4" data-label="Options"><button style="background-color: #007BFF; color: white; padding: 5px 10px; border: none; border-radius: 5px;"><i class="fa-solid fa-download"></i></button>
-                    <button style="background-color: #FF4B4B; color: white; padding: 5px 10px; border: none; border-radius: 5px;"><i class="fa-solid fa-trash-can"></i></button></div>
-              </li>
-              <li class="table-row">
-                <div class="col col-1" data-label="Time">00:00</div>
-                <div class="col col-2" data-label="Document Name">xxxxxxxxxxxxxxxxxxxxxxxx</div>
-                <div class="col col-3" data-label="Date">xx/xx/2024</div>
-                <div class="col col-4" data-label="Options"><button style="background-color: #007BFF; color: white; padding: 5px 10px; border: none; border-radius: 5px;"><i class="fa-solid fa-download"></i></button>
-                    <button style="background-color: #FF4B4B; color: white; padding: 5px 10px; border: none; border-radius: 5px;"><i class="fa-solid fa-trash-can"></i></button></div>
-              </li>
-            </ul>
-          </div>
-     </div>
-      <!--  -->
-    
-    </div></div>
-        <p style="color: dimgrey;">&copy; BOCISearch 2024</p>
-    <script src="scri.js"></script>
-    <script src="{% static 'js/translations.js' %}"></script>
+            </div>
+
+        </div>
+    </div>
+        {% include 'includes/footer.html' %}
+        <script src="{% static 'js/history.js' %}"></script>
   </body>
 </html>

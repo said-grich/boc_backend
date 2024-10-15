@@ -1,0 +1,34 @@
+{% load static %}
+ 
+ <!-- Bootstrap Spinner -->
+ {% include 'includes/spinner.html' %}
+
+ <header class="header">
+   <nav class="nav">
+     <a href="{% url 'home' %}" class="nav_logo">BOCISearch</a>
+     <div class="dropdown">
+       <button class="dropdown-btn" onclick="toggleDropdown()">
+         <i class="fa-solid fa-bars"></i>
+         <!-- <span class="material-symbols-outlined expand-icon"> expand_more </span> -->
+       </button>
+ 
+       <div class="dropdown-content" id="myDropdown">
+         <a href="{% url 'profile_page' %}">
+           <!-- <span class="material-symbols-outlined"> cottage </span> -->
+           <i data-i18n="profile" class="fa-solid fa-user"></i> Profile
+         </a>
+         <a href="{% url 'history_page'%}">
+           <!-- <span class="material-symbols-outlined">category</span> -->
+           <i  data-i18n="historic" class="fa-solid fa-clock-rotate-left"></i> Historic
+         </a>
+         <a onclick="logout()">
+           <!-- <span class="material-symbols-outlined">donut_large</span> -->
+           <i data-i18n="logout"  class="fa-solid fa-right-from-bracket"></i> Logout
+         </a>    
+         </div>
+ 
+       </div>
+     </div>
+   
+   </nav>
+    </header>
