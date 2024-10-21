@@ -1,12 +1,12 @@
 from rest_framework import serializers
 from .models import CustomUser
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.auth.models import User
 from django.contrib.auth.models import AbstractBaseUser
 from django.core.mail import send_mail
-
+import string
+import random
 class RegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)
@@ -69,43 +69,36 @@ class ProfileSerializer(serializers.ModelSerializer):
         return instance
 
 class PasswordResetSerializer(serializers.Serializer):
-    email = serializers.EmailField(min_length=2)
+    email = serializers.EmailField()
 
-    def validate(self, data):
-        email = data['email']
-        if CustomUser.objects.filter(email=email).exists():
-            user = CustomUser.objects.get(email=email)
-            uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
-            token = PasswordResetTokenGenerator().make_token(user)
-            reset_url = f"http://127.0.0.1:8000/password-reset-confirm/{uidb64}/{token}/"
-            send_mail(
-                'Password Reset Request',
-                f'Here is your password reset link: {reset_url}',
-                settings.EMAIL_HOST_USER,  # Set your own sender email address
-                [user.email],
-                fail_silently=False,
-            )
-            return data
-        else:
-            raise serializers.ValidationError("User with this email does not exist.")
+    def validate_email(self, value):
+        try:
+            user = CustomUser.objects.get(email=value)
+        except CustomUser.DoesNotExist:
+            raise serializers.ValidationError("There is no user registered with this email address.")
+        return value
+
+    def generate_new_password(self, length=8):
+        """Generate a random password with letters and digits."""
+        characters = string.ascii_letters + string.digits
+        new_password = ''.join(random.choice(characters) for i in range(length))
+        return new_password
 
     def save(self):
-        # Optionally, if needed you can define any additional save logic here.
-        pass
+        email = self.validated_data['email']
+        user = CustomUser.objects.get(email=email)
 
-class SetNewPasswordSerializer(serializers.Serializer):
-    password = serializers.CharField(write_only=True)
-    token = serializers.CharField(write_only=True)
-    uidb64 = serializers.CharField(write_only=True)
+        # Generate a new password
+        new_password = self.generate_new_password()
 
-    def validate(self, data):
-        try:
-            uid = force_str(urlsafe_base64_decode(data['uidb64']))
-            user = CustomUser.objects.get(id=uid)
-            if not PasswordResetTokenGenerator().check_token(user, data['token']):
-                raise serializers.ValidationError("Invalid token.")
-            user.set_password(data['password'])
-            user.save()
-            return user
-        except DjangoUnicodeDecodeError:
-            raise serializers.ValidationError("Invalid token or user.")       
+        # Set the new password
+        user.set_password(new_password)
+        user.save()
+
+        # Send the new password via email
+        send_mail(
+            subject="Your new password",
+            message=f"Your new password is: {new_password}",
+            from_email="bocisearch@gmail.com",  # Replace with your email
+            recipient_list=[user.email],
+        )

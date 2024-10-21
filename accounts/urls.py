@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import LogoutView, RegistrationView, LoginView, ProfileViewSet, PasswordResetView, SetNewPasswordView
+from .views import LogoutView, RegistrationView, LoginView, ProfileViewSet, PasswordResetView, Forget_page
 from django.urls import path, include
 
 urlpatterns = [
@@ -9,5 +9,7 @@ urlpatterns = [
     path('profile/', ProfileViewSet.as_view({'get': 'retrieve'}), name='profile'),  # For showing the user profile
     path('profile/update/', ProfileViewSet.as_view({'put': 'update', 'patch': 'partial_update'}), name='profile_update'),  # For updating user profile
     path('password-reset/', PasswordResetView.as_view(), name='password_reset'),
-    path('set-new-password/', SetNewPasswordView.as_view(), name='set_new_password'),
+    path('forgetPassword/', Forget_page, name='forget'),
 ]
+
+

@@ -24,5 +24,4 @@ urlpatterns = [
     path('', include('documents_parser.urls')),
     path('api/accounts/', include('accounts.urls')),
     path('profile/',views.profile_page, name='profile_page'),
-
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
