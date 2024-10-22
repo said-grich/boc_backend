@@ -87,7 +87,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
-    'https://boci-search-aee37a381371.herokuapp.com/' # Replace with your correct port number
+    'https://boci-search-aee37a381371.herokuapp.com' # Replace with your correct port number
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
