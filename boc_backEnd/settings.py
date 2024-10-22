@@ -198,3 +198,5 @@ SIMPLE_JWT = {
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
 }
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
