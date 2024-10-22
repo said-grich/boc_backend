@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-foldj#@y^l0@rgd+bl0&5@0_3o&iiu0%k*0z4#q(nw%c2ou)lt
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['boc-backend-yntg.onrender.com']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
