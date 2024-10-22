@@ -86,7 +86,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
-    "boc-backend-yntg.onrender.com"# Replace with your correct port number
+    'https://boc-backend-yntg.onrender.com' # Replace with your correct port number
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
