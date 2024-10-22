@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-foldj#@y^l0@rgd+bl0&5@0_3o&iiu0%k*0z4#q(nw%c2ou)lt
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['boc-backend-yntg.onrender.com']
 
 
 # Application definition
@@ -85,7 +85,8 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8080",  # Replace with your correct port number
+    "http://localhost:8080",
+    "boc-backend-yntg.onrender.com"# Replace with your correct port number
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
