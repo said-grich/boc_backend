@@ -176,7 +176,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
 
 # Media
 MEDIA_URL = '/media/'
@@ -199,7 +198,20 @@ SIMPLE_JWT = {
     'SIGNING_KEY': SECRET_KEY,
 }
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_URL = '/static/'  # All static files will be accessed through this URL prefix.
+
+# Static files directory where static files will be collected during deployment
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Additional directories containing static files (like project-level assets)
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  # Your project-specific static files
+]
+
+# Media files configuration
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
