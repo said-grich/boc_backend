@@ -74,6 +74,7 @@ REST_FRAMEWORK = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -93,12 +94,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'boc_backEnd.urls'
 
-STATIC_URL = '/static/'
-
-STATICFILES_DIRS = [
-    # This will include static files located in the 'static/' directory at the project root
-    BASE_DIR / "static",
-]
 
 # Templates directory
 TEMPLATES = [
@@ -215,3 +210,4 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
