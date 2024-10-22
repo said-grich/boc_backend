@@ -5,19 +5,6 @@ services:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/app
+      - .:/app  # Sync code changes between host and container
     ports:
       - "8000:8000"
-    depends_on:
-      - db
-
-  db:
-    image: postgres:13
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    environment:
-      POSTGRES_DB: boc_db   
-      POSTGRES_USER: boc_user
-      POSTGRES_PASSWORD: boc2024
-volumes:
-  postgres_data:
